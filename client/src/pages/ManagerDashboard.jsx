@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import {
     Users, Briefcase, Clock, DollarSign, TrendingUp,
     AlertTriangle, Award, BarChart3,
@@ -18,6 +19,7 @@ import {
 } from 'recharts';
 
 const ManagerDashboard = () => {
+    const { isDark } = useTheme();
     const [activeTab, setActiveTab] = useState('overview');
     const [overview, setOverview] = useState(null);
     const [weeklyTrends, setWeeklyTrends] = useState([]);
@@ -61,14 +63,14 @@ const ManagerDashboard = () => {
     ] : [];
 
     return (
-        <div className="min-h-screen bg-dark-900">
+        <div className={`min-h-screen ${isDark ? 'bg-dark-900' : 'bg-gray-100'}`}>
             <Navbar />
 
             <div className="flex">
                 {/* Sidebar */}
-                <aside className="w-64 min-h-[calc(100vh-64px)] bg-dark-800/50 border-r border-dark-700 p-4">
+                <aside className={`w-64 min-h-[calc(100vh-64px)] ${isDark ? 'bg-dark-800/50 border-dark-700' : 'bg-white/80 border-gray-200'} border-r p-4`}>
                     <div className="mb-6 px-4">
-                        <h2 className="text-xs font-semibold text-dark-400 uppercase tracking-wider">
+                        <h2 className={`text-xs font-semibold ${isDark ? 'text-dark-400' : 'text-gray-500'} uppercase tracking-wider`}>
                             Command Center
                         </h2>
                     </div>
@@ -93,8 +95,8 @@ const ManagerDashboard = () => {
                         <div className="space-y-6 animate-fade-in">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
-                                    <p className="text-dark-400 mt-1">Monitor your dealership's performance</p>
+                                    <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Dashboard Overview</h1>
+                                    <p className={`mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Monitor your dealership's performance</p>
                                 </div>
                                 <button
                                     onClick={loadData}

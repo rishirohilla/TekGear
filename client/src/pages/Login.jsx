@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Zap, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
@@ -9,6 +10,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { login } = useAuth();
+    const { isDark } = useTheme();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -29,7 +31,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4">
+        <div className={`min-h-screen ${isDark ? 'bg-dark-900' : 'bg-gray-100'} flex items-center justify-center p-4`}>
             {/* Background effects */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute w-96 h-96 bg-primary-500/20 rounded-full blur-3xl -top-48 -left-48" />
@@ -42,15 +44,15 @@ const Login = () => {
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-2xl mb-4 shadow-glow">
                         <Zap className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-3xl font-bold text-white">
+                    <h1 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                         Tek<span className="font-light text-primary-400">Gear</span>
                     </h1>
-                    <p className="text-dark-400 mt-2">Dealership Productivity Platform</p>
+                    <p className={`mt-2 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Dealership Productivity Platform</p>
                 </div>
 
                 {/* Login Card */}
                 <div className="glass-card p-8">
-                    <h2 className="text-xl font-semibold text-white mb-6">Welcome back</h2>
+                    <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-6`}>Welcome back</h2>
 
                     {error && (
                         <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
