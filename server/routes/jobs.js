@@ -55,13 +55,40 @@ router.get('/', protect, async (req, res) => {
 // @access  Private/Technician
 router.get('/my-jobs', protect, async (req, res) => {
     try {
-        const jobs = await Job.find({ assignedTech: req.user._id })
-            .sort({ createdAt: -1 });
+        const jobs = await Job.find({
+            $or: [
+                { assignedTech: req.user._id },
+                { requestedBy: req.user._id }
+            ]
+        }).sort({ createdAt: -1 });
 
         res.json({
             success: true,
             count: jobs.length,
             data: jobs
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   GET /api/jobs/pending-requests
+// @desc    Get all pending job requests (Manager only)
+// @access  Private/Manager
+// NOTE: This route MUST be defined BEFORE /:id routes!
+router.get('/pending-requests', protect, managerOnly, async (req, res) => {
+    try {
+        const pendingJobs = await Job.find({ requestStatus: 'pending' })
+            .populate('requestedBy', 'name email certifications')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: pendingJobs.length,
+            data: pendingJobs
         });
     } catch (error) {
         res.status(500).json({
@@ -335,6 +362,393 @@ router.delete('/:id', protect, managerOnly, async (req, res) => {
         res.json({
             success: true,
             data: {}
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ================== JOB REQUEST/APPROVAL WORKFLOW ==================
+
+const crypto = require('crypto');
+const { sendJobRequestNotification, sendJobApprovalNotification } = require('../services/notificationService');
+
+// NOTE: pending-requests route is defined earlier in the file (before :id routes)
+
+// @route   POST /api/jobs/:id/request
+// @desc    Tech requests to take a job (needs manager approval)
+// @access  Private/Technician
+router.post('/:id/request', protect, async (req, res) => {
+    try {
+        const job = await Job.findById(req.params.id);
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                error: 'Job not found'
+            });
+        }
+
+        if (job.status !== 'available') {
+            return res.status(400).json({
+                success: false,
+                error: 'Job is not available for request'
+            });
+        }
+
+        // Check if tech has required certification
+        if (!req.user.certifications.includes(job.requiredCert)) {
+            return res.status(403).json({
+                success: false,
+                error: `You need ${job.requiredCert} certification to request this job`
+            });
+        }
+
+        // Generate approval token for email link
+        const approvalToken = crypto.randomBytes(32).toString('hex');
+
+        job.status = 'pending-approval';
+        job.requestedBy = req.user._id;
+        job.requestStatus = 'pending';
+        job.assignmentType = 'requested';
+        job.approvalToken = approvalToken;
+        await job.save();
+
+        // Find managers to notify
+        const managers = await User.find({ role: 'manager', isActive: true });
+
+        // Send email notification to managers
+        for (const manager of managers) {
+            try {
+                await sendJobRequestNotification(manager, {
+                    techName: req.user.name,
+                    techEmail: req.user.email,
+                    jobTitle: job.title,
+                    jobId: job._id,
+                    requiredCert: job.requiredCert,
+                    bookTime: job.bookTime,
+                    approvalToken
+                });
+            } catch (notifyError) {
+                console.log('Manager notification failed:', notifyError.message);
+            }
+        }
+
+        res.json({
+            success: true,
+            data: job,
+            message: 'Job request submitted! Waiting for manager approval.'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   POST /api/jobs/:id/approve
+// @desc    Manager approves job request from dashboard
+// @access  Private/Manager
+router.post('/:id/approve', protect, managerOnly, async (req, res) => {
+    try {
+        const job = await Job.findById(req.params.id).populate('requestedBy', 'name email');
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                error: 'Job not found'
+            });
+        }
+
+        if (job.requestStatus !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                error: 'No pending request for this job'
+            });
+        }
+
+        job.status = 'available'; // Back to available, tech can now start
+        job.requestStatus = 'approved';
+        job.approvedBy = req.user._id;
+        job.approvedAt = new Date();
+        job.assignedTech = job.requestedBy._id;
+        job.approvalToken = null;
+        await job.save();
+
+        // Notify tech of approval
+        try {
+            await sendJobApprovalNotification(job.requestedBy, {
+                jobTitle: job.title,
+                approved: true,
+                managerName: req.user.name
+            });
+        } catch (notifyError) {
+            console.log('Tech notification failed:', notifyError.message);
+        }
+
+        res.json({
+            success: true,
+            data: job,
+            message: `Job approved for ${job.requestedBy.name}`
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   GET /api/jobs/:id/approve/:token
+// @desc    Manager approves job via email link
+// @access  Public (token-based auth)
+router.get('/:id/approve/:token', async (req, res) => {
+    try {
+        const job = await Job.findOne({
+            _id: req.params.id,
+            approvalToken: req.params.token
+        }).populate('requestedBy', 'name email');
+
+        if (!job) {
+            return res.status(404).send(`
+                <html>
+                    <body style="font-family: sans-serif; text-align: center; padding: 50px; background: #0a0a0a; color: white;">
+                        <h1 style="color: #ef4444;">❌ Invalid or Expired Link</h1>
+                        <p>This approval link is no longer valid.</p>
+                    </body>
+                </html>
+            `);
+        }
+
+        if (job.requestStatus !== 'pending') {
+            return res.send(`
+                <html>
+                    <body style="font-family: sans-serif; text-align: center; padding: 50px; background: #0a0a0a; color: white;">
+                        <h1 style="color: #f59e0b;">⚠️ Already Processed</h1>
+                        <p>This job request has already been ${job.requestStatus}.</p>
+                    </body>
+                </html>
+            `);
+        }
+
+        job.status = 'available';
+        job.requestStatus = 'approved';
+        job.approvedAt = new Date();
+        job.assignedTech = job.requestedBy._id;
+        job.approvalToken = null;
+        await job.save();
+
+        // Notify tech
+        try {
+            await sendJobApprovalNotification(job.requestedBy, {
+                jobTitle: job.title,
+                approved: true,
+                managerName: 'Manager (via email)'
+            });
+        } catch (e) { }
+
+        res.send(`
+            <html>
+                <body style="font-family: sans-serif; text-align: center; padding: 50px; background: #0a0a0a; color: white;">
+                    <h1 style="color: #4cad9a;">✅ Job Approved!</h1>
+                    <p><strong>${job.requestedBy.name}</strong> can now start working on:</p>
+                    <h2 style="color: #4cad9a;">${job.title}</h2>
+                    <p style="color: #666;">You can close this window.</p>
+                </body>
+            </html>
+        `);
+    } catch (error) {
+        res.status(500).send('Error processing approval');
+    }
+});
+
+// @route   POST /api/jobs/:id/reject
+// @desc    Manager rejects job request
+// @access  Private/Manager
+router.post('/:id/reject', protect, managerOnly, async (req, res) => {
+    try {
+        const job = await Job.findById(req.params.id).populate('requestedBy', 'name email');
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                error: 'Job not found'
+            });
+        }
+
+        if (job.requestStatus !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                error: 'No pending request for this job'
+            });
+        }
+
+        const rejectedTech = job.requestedBy;
+
+        job.status = 'available'; // Back to pool
+        job.requestStatus = 'rejected';
+        job.rejectedReason = req.body.reason || 'No reason provided';
+        job.requestedBy = null;
+        job.assignmentType = null;
+        job.approvalToken = null;
+        await job.save();
+
+        // Notify tech of rejection
+        try {
+            await sendJobApprovalNotification(rejectedTech, {
+                jobTitle: job.title,
+                approved: false,
+                reason: job.rejectedReason,
+                managerName: req.user.name
+            });
+        } catch (notifyError) {
+            console.log('Tech notification failed:', notifyError.message);
+        }
+
+        res.json({
+            success: true,
+            data: job,
+            message: 'Job request rejected'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   POST /api/jobs/:id/assign
+// @desc    Manager directly assigns job to tech
+// @access  Private/Manager
+router.post('/:id/assign', protect, managerOnly, async (req, res) => {
+    try {
+        const { techId } = req.body;
+
+        const job = await Job.findById(req.params.id);
+        const tech = await User.findById(techId);
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                error: 'Job not found'
+            });
+        }
+
+        if (!tech || tech.role !== 'technician') {
+            return res.status(404).json({
+                success: false,
+                error: 'Technician not found'
+            });
+        }
+
+        // Check if tech has required certification
+        if (!tech.certifications.includes(job.requiredCert)) {
+            return res.status(400).json({
+                success: false,
+                error: `${tech.name} doesn't have ${job.requiredCert} certification`
+            });
+        }
+
+        job.status = 'available';
+        job.assignedTech = techId;
+        job.assignmentType = 'direct';
+        job.requestStatus = 'approved';
+        job.approvedBy = req.user._id;
+        job.approvedAt = new Date();
+        await job.save();
+
+        // Notify tech of assignment
+        try {
+            await sendJobApprovalNotification(tech, {
+                jobTitle: job.title,
+                approved: true,
+                managerName: req.user.name,
+                directAssignment: true
+            });
+        } catch (notifyError) {
+            console.log('Tech notification failed:', notifyError.message);
+        }
+
+        res.json({
+            success: true,
+            data: job,
+            message: `Job assigned to ${tech.name}`
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   POST /api/jobs/:id/reassign
+// @desc    Manager force-reassigns job (even mid-progress)
+// @access  Private/Manager
+router.post('/:id/reassign', protect, managerOnly, async (req, res) => {
+    try {
+        const { techId, reason } = req.body;
+
+        const job = await Job.findById(req.params.id).populate('assignedTech', 'name email');
+        const newTech = await User.findById(techId);
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                error: 'Job not found'
+            });
+        }
+
+        if (!newTech || newTech.role !== 'technician') {
+            return res.status(404).json({
+                success: false,
+                error: 'Technician not found'
+            });
+        }
+
+        // Check if new tech has required certification
+        if (!newTech.certifications.includes(job.requiredCert)) {
+            return res.status(400).json({
+                success: false,
+                error: `${newTech.name} doesn't have ${job.requiredCert} certification`
+            });
+        }
+
+        const previousTech = job.assignedTech;
+        const wasInProgress = job.status === 'in-progress';
+
+        // Reset job status if it was in progress
+        if (wasInProgress) {
+            job.status = 'available';
+            job.startedAt = null;
+        }
+
+        job.assignedTech = techId;
+        job.assignmentType = 'direct';
+        job.notes = `Reassigned from ${previousTech?.name || 'unassigned'} to ${newTech.name}. Reason: ${reason || 'Manager decision'}`;
+        await job.save();
+
+        // Notify new tech
+        try {
+            await sendJobApprovalNotification(newTech, {
+                jobTitle: job.title,
+                approved: true,
+                managerName: req.user.name,
+                directAssignment: true,
+                reassigned: true
+            });
+        } catch (e) { }
+
+        res.json({
+            success: true,
+            data: job,
+            message: `Job reassigned to ${newTech.name}`,
+            wasInProgress
         });
     } catch (error) {
         res.status(500).json({

@@ -79,7 +79,7 @@ const seedDatabase = async () => {
         // Create Manager account
         const manager = await User.create({
             name: 'Sarah Mitchell',
-            email: 'manager@geargain.com',
+            email: 'manager@tekgear.com',
             password: 'manager123',
             role: 'manager',
             certifications: []
@@ -91,7 +91,7 @@ const seedDatabase = async () => {
         for (let i = 0; i < 18; i++) {
             const tech = await User.create({
                 name: technicianNames[i],
-                email: `tech${i + 1}@geargain.com`,
+                email: `tech${i + 1}@tekgear.com`,
                 password: 'tech123',
                 role: 'technician',
                 certifications: generateCertifications(),
@@ -182,9 +182,9 @@ const seedDatabase = async () => {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('\n📋 Login Credentials:');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log('Manager: manager@geargain.com / manager123');
-        console.log('Technician: tech1@geargain.com / tech123');
-        console.log('         (or tech2@geargain.com through tech18@geargain.com)');
+        console.log('Manager: manager@tekgear.com / manager123');
+        console.log('Technician: tech1@tekgear.com / tech123');
+        console.log('         (or tech2@tekgear.com through tech18@tekgear.com)');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
         process.exit(0);

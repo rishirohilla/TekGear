@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import {
     Users, Briefcase, Clock, DollarSign, TrendingUp,
-    AlertTriangle, GraduationCap, Award, BarChart3,
-    ChevronRight, Settings, Plus, Zap
+    AlertTriangle, Award, BarChart3,
+    ChevronRight, Settings, Plus, Zap, Bell, Sliders
 } from 'lucide-react';
 import { analyticsAPI, jobsAPI, usersAPI, incentiveRulesAPI } from '../services/api';
 import Navbar from '../components/common/Navbar';
 import Leaderboard from '../components/manager/Leaderboard';
 import BottleneckDetector from '../components/manager/BottleneckDetector';
-import TrainingSuggester from '../components/manager/TrainingSuggester';
 import IncentiveRulesManager from '../components/manager/IncentiveRulesManager';
 import JobsManager from '../components/manager/JobsManager';
+import PendingRequests from '../components/manager/PendingRequests';
+import TechnicianSettings from '../components/manager/TechnicianSettings';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     LineChart, Line, PieChart, Pie, Cell
@@ -43,11 +44,12 @@ const ManagerDashboard = () => {
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: BarChart3 },
+        { id: 'pending', label: 'Approvals', icon: Bell, badge: true },
         { id: 'leaderboard', label: 'Leaderboard', icon: Award },
         { id: 'bottlenecks', label: 'Bottlenecks', icon: AlertTriangle },
-        { id: 'training', label: 'Training', icon: GraduationCap },
         { id: 'jobs', label: 'Jobs', icon: Briefcase },
         { id: 'incentives', label: 'Incentive Rules', icon: DollarSign },
+        { id: 'tech-settings', label: 'Tech Settings', icon: Sliders },
     ];
 
     const COLORS = ['#4cad9a', '#3d9c8b', '#2e7a6d', '#75d2bd', '#a3e1d3'];
@@ -247,11 +249,12 @@ const ManagerDashboard = () => {
                         </div>
                     )}
 
+                    {activeTab === 'pending' && <PendingRequests />}
                     {activeTab === 'leaderboard' && <Leaderboard />}
                     {activeTab === 'bottlenecks' && <BottleneckDetector />}
-                    {activeTab === 'training' && <TrainingSuggester />}
                     {activeTab === 'jobs' && <JobsManager />}
                     {activeTab === 'incentives' && <IncentiveRulesManager />}
+                    {activeTab === 'tech-settings' && <TechnicianSettings />}
                 </main>
             </div>
         </div>

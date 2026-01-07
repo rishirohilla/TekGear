@@ -30,8 +30,7 @@ const Navbar = () => {
                             <Zap className="w-6 h-6 text-white" />
                         </div>
                         <div className="hidden sm:block">
-                            <span className="text-xl font-bold text-white">GearGain</span>
-                            <span className="text-xl font-light text-primary-400"> Pro</span>
+                            <span className="text-xl font-bold text-white">Tek<span className="font-light text-primary-400">Gear</span></span>
                         </div>
                     </Link>
 

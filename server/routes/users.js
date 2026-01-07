@@ -74,7 +74,7 @@ router.put('/:id', protect, async (req, res) => {
         }
 
         const allowedUpdates = req.user.role === 'manager'
-            ? ['name', 'certifications', 'baseRate', 'weeklyBonusGoal', 'isActive']
+            ? ['name', 'certifications', 'baseRate', 'weeklyBonusGoal', 'bonusMultiplier', 'isActive']
             : ['name', 'avatar'];
 
         const updates = {};
@@ -100,6 +100,88 @@ router.put('/:id', protect, async (req, res) => {
         res.json({
             success: true,
             data: user
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   PUT /api/users/:id/settings
+// @desc    Manager updates technician settings (bonus multiplier, weekly goal)
+// @access  Private/Manager
+router.put('/:id/settings', protect, managerOnly, async (req, res) => {
+    try {
+        const { bonusMultiplier, weeklyBonusGoal } = req.body;
+
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        if (user.role !== 'technician') {
+            return res.status(400).json({
+                success: false,
+                error: 'Can only update technician settings'
+            });
+        }
+
+        // Update settings
+        if (typeof bonusMultiplier === 'number') {
+            user.bonusMultiplier = Math.min(Math.max(bonusMultiplier, 0), 3); // 0x to 3x
+        }
+        if (typeof weeklyBonusGoal === 'number') {
+            user.weeklyBonusGoal = Math.max(weeklyBonusGoal, 0);
+        }
+
+        await user.save();
+
+        res.json({
+            success: true,
+            data: user,
+            message: `Settings updated for ${user.name}`
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// @route   POST /api/users/:id/reset-weekly
+// @desc    Reset technician's weekly earnings (typically automated)
+// @access  Private/Manager
+router.post('/:id/reset-weekly', protect, managerOnly, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Archive current week's data
+        if (user.weeklyEarnings > 0) {
+            user.efficiencyHistory.push({
+                weekStartDate: new Date(),
+                bonusEarned: user.weeklyEarnings
+            });
+        }
+
+        user.weeklyEarnings = 0;
+        await user.save();
+
+        res.json({
+            success: true,
+            data: user,
+            message: `Weekly earnings reset for ${user.name}`
         });
     } catch (error) {
         res.status(500).json({
@@ -141,6 +223,7 @@ router.get('/:id/stats', protect, async (req, res) => {
             totalIncentiveEarned: completedJobs.reduce((acc, job) => acc + (job.incentiveEarned || 0), 0),
             weeklyEarnings: user.weeklyEarnings,
             weeklyBonusGoal: user.weeklyBonusGoal,
+            bonusMultiplier: user.bonusMultiplier || 1.0,
             progressToGoal: user.weeklyBonusGoal > 0
                 ? Math.min((user.weeklyEarnings / user.weeklyBonusGoal) * 100, 100)
                 : 0,

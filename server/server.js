@@ -31,7 +31,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.get('/api/health', (req, res) => {
     res.json({
         success: true,
-        message: 'GearGain Pro API is running',
+        message: 'TekGear API is running',
         timestamp: new Date().toISOString()
     });
 });
@@ -58,7 +58,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚡ GearGain Pro API Server
+⚡ TekGear API Server
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🚀 Server running on port ${PORT}
 📍 API Health: http://localhost:${PORT}/api/health

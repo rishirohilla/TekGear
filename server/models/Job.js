@@ -32,7 +32,7 @@ const jobSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['available', 'in-progress', 'completed', 'cancelled'],
+        enum: ['available', 'pending-approval', 'in-progress', 'completed', 'cancelled'],
         default: 'available'
     },
     priority: {
@@ -72,6 +72,39 @@ const jobSchema = new mongoose.Schema({
     serviceOrderNumber: {
         type: String,
         unique: true
+    },
+    // Job Request/Approval Workflow
+    assignmentType: {
+        type: String,
+        enum: ['direct', 'requested'],
+        default: null
+    },
+    requestedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    requestStatus: {
+        type: String,
+        enum: ['none', 'pending', 'approved', 'rejected'],
+        default: 'none'
+    },
+    approvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    approvedAt: {
+        type: Date,
+        default: null
+    },
+    rejectedReason: {
+        type: String,
+        default: ''
+    },
+    approvalToken: {
+        type: String,
+        default: null
     }
 }, {
     timestamps: true

@@ -44,7 +44,9 @@ export const usersAPI = {
     getAll: () => api.get('/users'),
     getById: (id) => api.get(`/users/${id}`),
     update: (id, data) => api.put(`/users/${id}`, data),
-    getStats: (id) => api.get(`/users/${id}/stats`)
+    getStats: (id) => api.get(`/users/${id}/stats`),
+    updateSettings: (id, data) => api.put(`/users/${id}/settings`, data),
+    resetWeekly: (id) => api.post(`/users/${id}/reset-weekly`)
 };
 
 // Jobs APIs
@@ -56,7 +58,14 @@ export const jobsAPI = {
     update: (id, data) => api.put(`/jobs/${id}`, data),
     delete: (id) => api.delete(`/jobs/${id}`),
     start: (id) => api.post(`/jobs/${id}/start`),
-    complete: (id, data) => api.post(`/jobs/${id}/complete`, data)
+    complete: (id, data) => api.post(`/jobs/${id}/complete`, data),
+    // Job Request/Approval Workflow
+    getPendingRequests: () => api.get('/jobs/pending-requests'),
+    request: (id) => api.post(`/jobs/${id}/request`),
+    approve: (id) => api.post(`/jobs/${id}/approve`),
+    reject: (id, data) => api.post(`/jobs/${id}/reject`, data),
+    assign: (id, techId) => api.post(`/jobs/${id}/assign`, { techId }),
+    reassign: (id, data) => api.post(`/jobs/${id}/reassign`, data)
 };
 
 // Incentive Rules APIs
@@ -72,7 +81,6 @@ export const incentiveRulesAPI = {
 export const analyticsAPI = {
     getLeaderboard: () => api.get('/analytics/leaderboard'),
     getBottlenecks: () => api.get('/analytics/bottlenecks'),
-    getTrainingSuggestions: () => api.get('/analytics/training-suggestions'),
     getOverview: () => api.get('/analytics/overview'),
     getWeeklyTrends: () => api.get('/analytics/weekly-trends')
 };

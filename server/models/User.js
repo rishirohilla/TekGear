@@ -42,6 +42,12 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 500 // Target weekly bonus goal
     },
+    bonusMultiplier: {
+        type: Number,
+        default: 1.0, // Manager can adjust per-tech (0.5 = 50%, 1.5 = 150%)
+        min: 0,
+        max: 3
+    },
     efficiencyHistory: [{
         weekStartDate: Date,
         flaggedHours: Number,

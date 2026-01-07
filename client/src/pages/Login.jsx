@@ -43,7 +43,7 @@ const Login = () => {
                         <Zap className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-white">
-                        GearGain<span className="font-light text-primary-400"> Pro</span>
+                        Tek<span className="font-light text-primary-400">Gear</span>
                     </h1>
                     <p className="text-dark-400 mt-2">Dealership Productivity Platform</p>
                 </div>
@@ -127,10 +127,10 @@ const Login = () => {
                         <p className="text-xs text-dark-400 mb-2">Demo Credentials:</p>
                         <div className="space-y-1 text-xs">
                             <p className="text-dark-300">
-                                <span className="text-primary-400">Manager:</span> manager@geargain.com / manager123
+                                <span className="text-primary-400">Manager:</span> manager@tekgear.com / manager123
                             </p>
                             <p className="text-dark-300">
-                                <span className="text-primary-400">Technician:</span> tech1@geargain.com / tech123
+                                <span className="text-primary-400">Technician:</span> tech1@tekgear.com / tech123
                             </p>
                         </div>
                     </div>

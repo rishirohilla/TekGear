@@ -1,8 +1,8 @@
-# GearGain Pro
+# TekGear
 
 **Dealership Productivity Platform** - A MERN stack application focusing on "Certified Dispatching" and "Efficiency Incentives."
 
-![GearGain Pro](https://img.shields.io/badge/MERN-Stack-4cad9a?style=for-the-badge)
+![TekGear](https://img.shields.io/badge/MERN-Stack-4cad9a?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 ## 🚀 Features
@@ -101,10 +101,10 @@ This starts both:
 
 | Role | Email | Password |
 |------|-------|----------|
-| **Manager** | manager@geargain.com | manager123 |
-| **Technician** | tech1@geargain.com | tech123 |
+| **Manager** | manager@tekgear.com | manager123 |
+| **Technician** | tech1@tekgear.com | tech123 |
 
-*Technicians: tech1@ through tech18@geargain.com all use password `tech123`*
+*Technicians: tech1@ through tech18@tekgear.com all use password `tech123`*
 
 ## 📁 Project Structure
 
