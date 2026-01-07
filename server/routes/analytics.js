@@ -108,63 +108,6 @@ router.get('/bottlenecks', protect, managerOnly, async (req, res) => {
     }
 });
 
-// @route   GET /api/analytics/training-suggestions
-// @desc    Identify techs who are slow at certain certified tasks
-// @access  Private/Manager
-router.get('/training-suggestions', protect, managerOnly, async (req, res) => {
-    try {
-        const technicians = await User.find({ role: 'technician', isActive: true });
-        const suggestions = [];
-
-        for (const tech of technicians) {
-            for (const cert of tech.certifications) {
-                const jobs = await Job.find({
-                    assignedTech: tech._id,
-                    requiredCert: cert,
-                    status: 'completed'
-                });
-
-                if (jobs.length >= 3) { // Need at least 3 jobs to make a suggestion
-                    const totalBookTime = jobs.reduce((acc, job) => acc + job.bookTime, 0);
-                    const totalActualTime = jobs.reduce((acc, job) => acc + (job.actualTime || job.bookTime), 0);
-                    const avgEfficiency = totalBookTime / totalActualTime;
-
-                    // If consistently over time (efficiency < 0.9)
-                    if (avgEfficiency < 0.9) {
-                        const overTimeJobs = jobs.filter(j => (j.actualTime || 0) > j.bookTime).length;
-                        suggestions.push({
-                            techId: tech._id,
-                            techName: tech.name,
-                            certification: cert,
-                            jobsAnalyzed: jobs.length,
-                            avgEfficiency: Math.round(avgEfficiency * 100) / 100,
-                            overTimePercentage: Math.round((overTimeJobs / jobs.length) * 100),
-                            suggestedTraining: `Advanced ${cert} Training`,
-                            priority: avgEfficiency < 0.7 ? 'High' : avgEfficiency < 0.85 ? 'Medium' : 'Low',
-                            potentialTimeSavings: totalActualTime - totalBookTime
-                        });
-                    }
-                }
-            }
-        }
-
-        // Sort by priority
-        const priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
-        suggestions.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-
-        res.json({
-            success: true,
-            count: suggestions.length,
-            data: suggestions
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
 // @route   GET /api/analytics/overview
 // @desc    Get overall dashboard statistics
 // @access  Private/Manager

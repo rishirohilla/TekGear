@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { jobsAPI } from '../../services/api';
+import { jobsAPI, usersAPI } from '../../services/api';
 import {
     Briefcase, Plus, Clock, User, Car, Tag,
-    Loader2, CheckCircle, AlertCircle, PlayCircle, X
+    Loader2, CheckCircle, AlertCircle, PlayCircle, X,
+    UserPlus, RefreshCw
 } from 'lucide-react';
 
 const certOptions = ['EV', 'Engine', 'Brakes', 'Transmission', 'Electrical', 'HVAC', 'Diagnostics'];
@@ -10,6 +11,7 @@ const priorityOptions = ['low', 'medium', 'high', 'urgent'];
 
 const JobsManager = () => {
     const [jobs, setJobs] = useState([]);
+    const [technicians, setTechnicians] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [filter, setFilter] = useState('all');
@@ -22,16 +24,26 @@ const JobsManager = () => {
         vehicleInfo: { make: '', model: '', year: 2024, vin: '' }
     });
 
+    // Assign/Reassign modal state
+    const [showAssignModal, setShowAssignModal] = useState(null);
+    const [selectedTech, setSelectedTech] = useState('');
+    const [reassignReason, setReassignReason] = useState('');
+    const [actionLoading, setActionLoading] = useState(false);
+
     useEffect(() => {
-        loadJobs();
+        loadData();
     }, []);
 
-    const loadJobs = async () => {
+    const loadData = async () => {
         try {
-            const response = await jobsAPI.getAll();
-            setJobs(response.data.data);
+            const [jobsRes, techsRes] = await Promise.all([
+                jobsAPI.getAll(),
+                usersAPI.getAll()
+            ]);
+            setJobs(jobsRes.data.data);
+            setTechnicians(techsRes.data.data);
         } catch (error) {
-            console.error('Failed to load jobs:', error);
+            console.error('Failed to load data:', error);
         } finally {
             setLoading(false);
         }
@@ -41,7 +53,7 @@ const JobsManager = () => {
         e.preventDefault();
         try {
             await jobsAPI.create(formData);
-            loadJobs();
+            loadData();
             resetForm();
         } catch (error) {
             console.error('Failed to create job:', error);
@@ -60,9 +72,42 @@ const JobsManager = () => {
         });
     };
 
+    const handleAssign = async () => {
+        if (!selectedTech || !showAssignModal) return;
+        setActionLoading(true);
+        try {
+            const isReassign = showAssignModal.assignedTech;
+            if (isReassign) {
+                await jobsAPI.reassign(showAssignModal._id, {
+                    techId: selectedTech,
+                    reason: reassignReason || 'Manager decision'
+                });
+            } else {
+                await jobsAPI.assign(showAssignModal._id, selectedTech);
+            }
+            loadData();
+            closeAssignModal();
+        } catch (error) {
+            console.error('Failed to assign:', error);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const closeAssignModal = () => {
+        setShowAssignModal(null);
+        setSelectedTech('');
+        setReassignReason('');
+    };
+
+    const getEligibleTechs = (job) => {
+        return technicians.filter(t => t.certifications?.includes(job.requiredCert));
+    };
+
     const getStatusIcon = (status) => {
         switch (status) {
             case 'available': return <AlertCircle className="w-4 h-4 text-blue-400" />;
+            case 'pending-approval': return <Clock className="w-4 h-4 text-yellow-400" />;
             case 'in-progress': return <PlayCircle className="w-4 h-4 text-yellow-400" />;
             case 'completed': return <CheckCircle className="w-4 h-4 text-green-400" />;
             default: return null;
@@ -72,7 +117,8 @@ const JobsManager = () => {
     const getStatusColor = (status) => {
         switch (status) {
             case 'available': return 'badge bg-blue-500/20 text-blue-400';
-            case 'in-progress': return 'badge bg-yellow-500/20 text-yellow-400';
+            case 'pending-approval': return 'badge bg-yellow-500/20 text-yellow-400';
+            case 'in-progress': return 'badge bg-orange-500/20 text-orange-400';
             case 'completed': return 'badge bg-green-500/20 text-green-400';
             default: return 'badge bg-dark-600 text-dark-400';
         }
@@ -109,7 +155,7 @@ const JobsManager = () => {
                         <Briefcase className="w-7 h-7 text-primary-500" />
                         Jobs Management
                     </h1>
-                    <p className="text-dark-400 mt-1">Create and manage service orders</p>
+                    <p className="text-dark-400 mt-1">Create, assign, and manage service orders</p>
                 </div>
                 <button onClick={() => setShowForm(true)} className="btn-primary">
                     <Plus className="w-5 h-5 mr-2" />
@@ -118,8 +164,8 @@ const JobsManager = () => {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2">
-                {['all', 'available', 'in-progress', 'completed'].map((status) => (
+            <div className="flex gap-2 flex-wrap">
+                {['all', 'available', 'pending-approval', 'in-progress', 'completed'].map((status) => (
                     <button
                         key={status}
                         onClick={() => setFilter(status)}
@@ -257,6 +303,84 @@ const JobsManager = () => {
                 </div>
             )}
 
+            {/* Assign/Reassign Modal */}
+            {showAssignModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="glass-card p-6 w-full max-w-md animate-slide-up">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-semibold text-white">
+                                {showAssignModal.assignedTech ? 'Reassign Job' : 'Assign Job'}
+                            </h2>
+                            <button onClick={closeAssignModal} className="text-dark-400 hover:text-white">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="mb-4 p-3 bg-dark-700 rounded-lg">
+                            <p className="text-white font-medium">{showAssignModal.title}</p>
+                            <p className="text-sm text-dark-400">{showAssignModal.requiredCert} • {showAssignModal.bookTime} min</p>
+                            {showAssignModal.assignedTech && (
+                                <p className="text-sm text-yellow-400 mt-1">
+                                    Currently assigned to: {showAssignModal.assignedTech.name}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-dark-300 mb-2">
+                                Select Technician ({getEligibleTechs(showAssignModal).length} eligible)
+                            </label>
+                            <select
+                                value={selectedTech}
+                                onChange={(e) => setSelectedTech(e.target.value)}
+                                className="input-field"
+                            >
+                                <option value="">-- Select Technician --</option>
+                                {getEligibleTechs(showAssignModal).map(tech => (
+                                    <option key={tech._id} value={tech._id}>
+                                        {tech.name} ({tech.certifications.join(', ')})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {showAssignModal.assignedTech && (
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-dark-300 mb-2">
+                                    Reason for Reassignment
+                                </label>
+                                <input
+                                    type="text"
+                                    value={reassignReason}
+                                    onChange={(e) => setReassignReason(e.target.value)}
+                                    className="input-field"
+                                    placeholder="e.g., Tech unavailable, priority change..."
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex gap-3">
+                            <button onClick={closeAssignModal} className="btn-secondary flex-1">
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAssign}
+                                disabled={!selectedTech || actionLoading}
+                                className="btn-primary flex-1"
+                            >
+                                {actionLoading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                                ) : showAssignModal.assignedTech ? (
+                                    'Reassign'
+                                ) : (
+                                    'Assign'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Jobs Table */}
             <div className="glass-card overflow-hidden">
                 <table className="data-table">
@@ -269,12 +393,13 @@ const JobsManager = () => {
                             <th>Book Time</th>
                             <th>Status</th>
                             <th>Assigned</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredJobs.length === 0 ? (
                             <tr>
-                                <td colSpan="7" className="text-center py-8 text-dark-400">
+                                <td colSpan="8" className="text-center py-8 text-dark-400">
                                     No jobs found
                                 </td>
                             </tr>
@@ -311,6 +436,29 @@ const JobsManager = () => {
                                     <td className="text-dark-300">
                                         {job.assignedTech?.name || '-'}
                                     </td>
+                                    <td>
+                                        {job.status !== 'completed' && (
+                                            <button
+                                                onClick={() => setShowAssignModal(job)}
+                                                className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${job.assignedTech
+                                                        ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                                                        : 'bg-primary-500/20 text-primary-400 hover:bg-primary-500/30'
+                                                    }`}
+                                            >
+                                                {job.assignedTech ? (
+                                                    <>
+                                                        <RefreshCw className="w-3 h-3" />
+                                                        Reassign
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <UserPlus className="w-3 h-3" />
+                                                        Assign
+                                                    </>
+                                                )}
+                                            </button>
+                                        )}
+                                    </td>
                                 </tr>
                             ))
                         )}
@@ -322,3 +470,4 @@ const JobsManager = () => {
 };
 
 export default JobsManager;
+

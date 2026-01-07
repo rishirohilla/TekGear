@@ -8,18 +8,20 @@
 ## 🚀 Features
 
 ### For Managers
-- **Optimization Dashboard** - Real-time analytics with charts and KPIs
+- **Dashboard Overview** - Real-time analytics with charts and KPIs
+- **Job Approval Workflow** - Approve/reject technician job requests via email or dashboard
 - **Efficiency Leaderboard** - Technicians ranked by efficiency ratio
 - **Bottleneck Detector** - Identifies jobs exceeding book time
-- **Training Suggester** - AI-powered training recommendations
 - **Incentive Rules Manager** - Create and manage bonus rules
-- **Jobs Management** - Create and track service orders
+- **Jobs Management** - Create, assign, and reassign service orders
+- **Technician Settings** - Set per-tech bonus multipliers and weekly goals
 
 ### For Technicians
 - **Certification-Gated Jobs** - Only see jobs matching your certifications
+- **Request-to-Work Flow** - Request jobs for manager approval
 - **Beat the Clock Engine** - Real-time timer with bonus calculations
 - **Weekly Pulse** - Track earnings progress toward goals
-- **Instant Notifications** - Get alerts when you earn bonuses
+- **Instant Notifications** - Get email alerts when you earn bonuses
 
 ## 📋 Prerequisites
 
@@ -41,23 +43,21 @@ cd TekGear
 npm run install-all
 ```
 
-This installs dependencies for the root, server, and client.
-
 ### 3. Configure environment variables
 
 ```bash
 cp server/.env.example server/.env
 ```
 
-Edit `server/.env` with your settings:
+Edit `server/.env`:
 
 ```env
-MONGODB_URI=mongodb://localhost:27017/geargain
+MONGODB_URI=mongodb://localhost:27017/tekgear
 JWT_SECRET=your-super-secret-key-change-in-production
 JWT_EXPIRES_IN=7d
-PORT=5000
+PORT=5001
 
-# Email (Optional - for bonus notifications)
+# Email (Required for approval workflow)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
@@ -66,16 +66,7 @@ SMTP_PASS=your-app-password
 CLIENT_URL=http://localhost:5173
 ```
 
-### 4. Start MongoDB
-
-If using local MongoDB:
-```bash
-mongod
-```
-
-Or use MongoDB Atlas URI in your `.env` file.
-
-### 5. Seed the database
+### 4. Seed the database
 
 ```bash
 npm run seed
@@ -87,15 +78,14 @@ This creates:
 - 60+ Jobs with different statuses
 - 1 Active incentive rule
 
-### 6. Start the development servers
+### 5. Start development servers
 
 ```bash
 npm run dev
 ```
 
-This starts both:
-- **Backend** at http://localhost:5000
-- **Frontend** at http://localhost:5173
+- **Backend**: http://localhost:5001
+- **Frontend**: http://localhost:5173
 
 ## 🔐 Demo Credentials
 
@@ -113,13 +103,12 @@ TekGear/
 ├── client/                 # React frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── common/     # Shared components
-│   │   │   ├── manager/    # Manager-specific components
-│   │   │   └── technician/ # Technician-specific components
-│   │   ├── context/        # React context (Auth)
+│   │   │   ├── common/     # Navbar
+│   │   │   ├── manager/    # Dashboard components
+│   │   │   └── technician/ # Tech dashboard components
+│   │   ├── context/        # Auth context
 │   │   ├── pages/          # Page components
 │   │   └── services/       # API service
-│   └── ...
 ├── server/                 # Express backend
 │   ├── config/             # Database config
 │   ├── middleware/         # Auth & RBAC
@@ -145,33 +134,58 @@ TekGear/
 
 ### Jobs
 - `GET /api/jobs` - List jobs (filtered by cert for techs)
+- `GET /api/jobs/pending-requests` - Pending approval requests (manager)
+- `POST /api/jobs/:id/request` - Tech requests a job
+- `POST /api/jobs/:id/approve` - Manager approves request
+- `GET /api/jobs/:id/approve/:token` - One-click email approval
+- `POST /api/jobs/:id/reject` - Manager rejects request
+- `POST /api/jobs/:id/assign` - Manager assigns job to tech
+- `POST /api/jobs/:id/reassign` - Manager reassigns job
 - `POST /api/jobs/:id/start` - Start a job
 - `POST /api/jobs/:id/complete` - Complete job with incentive
+
+### Users
+- `PUT /api/users/:id/settings` - Update bonus multiplier & weekly goal
 
 ### Analytics (Manager only)
 - `GET /api/analytics/leaderboard` - Efficiency rankings
 - `GET /api/analytics/bottlenecks` - Problem areas
-- `GET /api/analytics/training-suggestions` - Training needs
+- `GET /api/analytics/overview` - Dashboard stats
+- `GET /api/analytics/weekly-trends` - Weekly performance trends
+
+## 🔄 Job Workflow
+
+```
+┌─────────────┐     ┌───────────────┐     ┌──────────────┐
+│ Job Created │ ──▶ │ Tech Requests │ ──▶ │ Manager Gets │
+│             │     │   (Optional)  │     │    Email     │
+└─────────────┘     └───────────────┘     └──────────────┘
+                                                 │
+       ┌─────────────────────────────────────────┘
+       ▼
+┌───────────────┐     ┌──────────────┐     ┌──────────────┐
+│ One-Click     │ ──▶ │ Tech Starts  │ ──▶ │ Beat Book    │
+│ Approve       │     │ Timer        │     │ Time = Bonus │
+└───────────────┘     └──────────────┘     └──────────────┘
+```
 
 ## 🧪 How Incentives Work
 
-1. Manager creates an **Incentive Rule** (e.g., $10 per 30 mins saved)
-2. Technician starts a job with a **Book Time** (e.g., 60 mins)
+1. Manager creates an **Incentive Rule** (e.g., $1 per minute saved)
+2. Technician starts a job with a **Book Time** (e.g., 45 mins)
 3. If completed in **less than book time**, bonus is calculated:
    
    ```
    Time Saved = Book Time - Actual Time
-   Bonus Units = floor(Time Saved / Threshold)
-   Incentive = Bonus Units × Bonus Per Unit
+   Bonus = Time Saved × Rate Per Minute × Bonus Multiplier
    ```
 
-4. Example: 60 min job done in 40 mins = 20 mins saved = $0 bonus (need 30+ mins)
-5. Same job done in 25 mins = 35 mins saved = 1 unit = **$10 bonus!**
+4. Example: 45 min job done in 38 mins = 7 mins saved = **$7 bonus!**
 
 ## 📜 License
 
-MIT License - feel free to use this for your own projects!
+MIT License
 
 ---
 
-Built with ❤️ for Tekion by a Lead Full-Stack Engineer
+Built with ❤️ for Hackathon
