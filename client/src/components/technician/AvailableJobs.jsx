@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { jobsAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import {
     Briefcase, Clock, Tag, Car, PlayCircle, Send,
     Loader2, AlertCircle, ChevronRight, CheckCircle, XCircle, Hourglass
 } from 'lucide-react';
 
 const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
+    const { isDark } = useTheme();
     const [jobs, setJobs] = useState([]);
     const [myJobs, setMyJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
             case 'high': return { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30' };
             case 'medium': return { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/30' };
             case 'low': return { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/30' };
-            default: return { bg: 'bg-dark-600', text: 'text-dark-400', border: 'border-dark-600' };
+            default: return { bg: isDark ? 'bg-dark-600' : 'bg-gray-100', text: isDark ? 'text-dark-400' : 'text-gray-500', border: isDark ? 'border-dark-600' : 'border-gray-200' };
         }
     };
 
@@ -81,7 +83,7 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
             {/* Approved Jobs - Ready to Start */}
             {approvedJobs.length > 0 && (
                 <div className="space-y-4">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
                         <CheckCircle className="w-5 h-5 text-green-400" />
                         Ready to Start
                         <span className="badge bg-green-500/20 text-green-400 text-xs ml-2">
@@ -106,15 +108,15 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
                                                     {job.requiredCert}
                                                 </span>
                                             </div>
-                                            <h3 className="font-semibold text-white text-lg">{job.title}</h3>
+                                            <h3 className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>{job.title}</h3>
                                             <div className="flex items-center gap-4 mt-3">
                                                 {job.vehicleInfo?.make && (
-                                                    <span className="flex items-center gap-1 text-sm text-dark-300">
+                                                    <span className={`flex items-center gap-1 text-sm ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                                                         <Car className="w-4 h-4" />
                                                         {job.vehicleInfo.make} {job.vehicleInfo.model}
                                                     </span>
                                                 )}
-                                                <span className="flex items-center gap-1 text-sm text-dark-300">
+                                                <span className={`flex items-center gap-1 text-sm ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                                                     <Clock className="w-4 h-4" />
                                                     {job.bookTime} min book time
                                                 </span>
@@ -145,7 +147,7 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
             {/* Available Jobs - Request to Work */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
                         <Briefcase className="w-5 h-5 text-primary-400" />
                         Available Jobs
                     </h2>
@@ -156,11 +158,11 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
 
                 {requestableJobs.length === 0 ? (
                     <div className="glass-card p-8 text-center">
-                        <div className="w-16 h-16 bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Briefcase className="w-8 h-8 text-dark-500" />
+                        <div className={`w-16 h-16 ${isDark ? 'bg-dark-700' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                            <Briefcase className={`w-8 h-8 ${isDark ? 'text-dark-500' : 'text-gray-400'}`} />
                         </div>
-                        <h3 className="text-lg font-medium text-white">No Jobs Available</h3>
-                        <p className="text-dark-400 text-sm mt-2">
+                        <h3 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>No Jobs Available</h3>
+                        <p className={`text-sm mt-2 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>
                             Jobs matching your certifications ({certifications.join(', ')}) will appear here
                         </p>
                     </div>
@@ -184,20 +186,20 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
                                                 </span>
                                             </div>
 
-                                            <h3 className="font-semibold text-white text-lg">{job.title}</h3>
+                                            <h3 className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>{job.title}</h3>
 
                                             {job.description && (
-                                                <p className="text-dark-400 text-sm mt-1">{job.description}</p>
+                                                <p className={`text-sm mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>{job.description}</p>
                                             )}
 
                                             <div className="flex items-center gap-4 mt-3">
                                                 {job.vehicleInfo?.make && (
-                                                    <span className="flex items-center gap-1 text-sm text-dark-300">
+                                                    <span className={`flex items-center gap-1 text-sm ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                                                         <Car className="w-4 h-4" />
                                                         {job.vehicleInfo.make} {job.vehicleInfo.model}
                                                     </span>
                                                 )}
-                                                <span className="flex items-center gap-1 text-sm text-dark-300">
+                                                <span className={`flex items-center gap-1 text-sm ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                                                     <Clock className="w-4 h-4" />
                                                     {job.bookTime} min book time
                                                 </span>
@@ -221,8 +223,8 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
                                     </div>
 
                                     {/* Potential Earnings Preview */}
-                                    <div className="mt-4 pt-4 border-t border-dark-700">
-                                        <div className="flex items-center gap-2 text-xs text-dark-400">
+                                    <div className={`mt-4 pt-4 border-t ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
+                                        <div className={`flex items-center gap-2 text-xs ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>
                                             <AlertCircle className="w-3 h-3" />
                                             <span>Beat the {job.bookTime} min book time to earn efficiency bonuses</span>
                                         </div>
@@ -241,7 +243,7 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
                         <Hourglass className="w-5 h-5 text-yellow-400 animate-pulse" />
                         <div>
                             <p className="text-yellow-400 font-medium">Pending Approval</p>
-                            <p className="text-xs text-dark-400">
+                            <p className={`text-xs ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>
                                 You have {myJobs.filter(j => j.requestStatus === 'pending').length} job request(s) waiting for manager approval
                             </p>
                         </div>
@@ -253,4 +255,3 @@ const AvailableJobs = ({ certifications, onStartJob, onRequestJob }) => {
 };
 
 export default AvailableJobs;
-

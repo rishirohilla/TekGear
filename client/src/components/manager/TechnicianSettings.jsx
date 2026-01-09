@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { usersAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import {
     Users, Settings, Sliders, Target, DollarSign,
     Loader2, Save, RefreshCw, Search
 } from 'lucide-react';
 
 const TechnicianSettings = () => {
+    const { isDark } = useTheme();
     const [technicians, setTechnicians] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState({});
@@ -93,11 +95,11 @@ const TechnicianSettings = () => {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-2`}>
                         <Settings className="w-6 h-6 text-primary-400" />
                         Technician Settings
                     </h2>
-                    <p className="text-dark-400 text-sm mt-1">
+                    <p className={`text-sm mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>
                         Adjust bonus multipliers and weekly goals for each technician
                     </p>
                 </div>
@@ -105,13 +107,13 @@ const TechnicianSettings = () => {
 
             {/* Search */}
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-dark-500' : 'text-gray-400'}`} />
                 <input
                     type="text"
                     placeholder="Search technicians..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="input-field w-full pl-10"
+                    className="input-field w-full !pl-10"
                 />
             </div>
 
@@ -139,20 +141,20 @@ const TechnicianSettings = () => {
                                             </span>
                                         </div>
                                         <div>
-                                            <p className="font-medium text-white">{tech.name}</p>
-                                            <p className="text-xs text-dark-500">{tech.email}</p>
+                                            <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{tech.name}</p>
+                                            <p className={`text-xs ${isDark ? 'text-dark-500' : 'text-gray-400'}`}>{tech.email}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <div className="flex flex-wrap gap-1">
                                         {tech.certifications?.slice(0, 3).map((cert) => (
-                                            <span key={cert} className="badge text-xs bg-dark-700 text-dark-300">
+                                            <span key={cert} className={`badge text-xs ${isDark ? 'bg-dark-700 text-dark-300' : 'bg-gray-100 text-gray-600'}`}>
                                                 {cert}
                                             </span>
                                         ))}
                                         {tech.certifications?.length > 3 && (
-                                            <span className="text-xs text-dark-500">
+                                            <span className={`text-xs ${isDark ? 'text-dark-500' : 'text-gray-400'}`}>
                                                 +{tech.certifications.length - 3}
                                             </span>
                                         )}
@@ -178,7 +180,7 @@ const TechnicianSettings = () => {
                                             min="0"
                                         />
                                     ) : (
-                                        <span className="text-white">${tech.weeklyBonusGoal || 500}</span>
+                                        <span className={isDark ? 'text-white' : 'text-gray-900'}>${tech.weeklyBonusGoal || 500}</span>
                                     )}
                                 </td>
                                 <td>
@@ -198,7 +200,7 @@ const TechnicianSettings = () => {
                                                 max="3"
                                                 step="0.1"
                                             />
-                                            <span className="text-dark-500">×</span>
+                                            <span className={isDark ? 'text-dark-500' : 'text-gray-400'}>×</span>
                                         </div>
                                     ) : (
                                         <span className={`font-bold ${getMultiplierColor(tech.bonusMultiplier || 1)}`}>
@@ -261,23 +263,23 @@ const TechnicianSettings = () => {
 
             {/* Multiplier Legend */}
             <div className="glass-card p-4">
-                <h4 className="text-sm font-medium text-white mb-3">Bonus Multiplier Guide</h4>
+                <h4 className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'} mb-3`}>Bonus Multiplier Guide</h4>
                 <div className="flex flex-wrap gap-4 text-sm">
                     <div className="flex items-center gap-2">
                         <span className="w-3 h-3 rounded-full bg-red-400" />
-                        <span className="text-dark-400">0-0.5× Reduced</span>
+                        <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>0-0.5× Reduced</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="w-3 h-3 rounded-full bg-yellow-400" />
-                        <span className="text-dark-400">0.5-1× Below Standard</span>
+                        <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>0.5-1× Below Standard</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="w-3 h-3 rounded-full bg-primary-400" />
-                        <span className="text-dark-400">1× Standard</span>
+                        <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>1× Standard</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="w-3 h-3 rounded-full bg-green-400" />
-                        <span className="text-dark-400">1.5-3× High Performer</span>
+                        <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>1.5-3× High Performer</span>
                     </div>
                 </div>
             </div>

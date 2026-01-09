@@ -70,6 +70,22 @@ const userSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    // Multi-shop support
+    shop: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Shop',
+        default: null
+    },
+    shopStatus: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
+    // Token for email-based approval actions
+    approvalToken: {
+        type: String,
+        default: null
     }
 }, {
     timestamps: true

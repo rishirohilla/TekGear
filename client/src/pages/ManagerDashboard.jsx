@@ -3,7 +3,7 @@ import { useTheme } from '../context/ThemeContext';
 import {
     Users, Briefcase, Clock, DollarSign, TrendingUp,
     AlertTriangle, Award, BarChart3,
-    ChevronRight, Settings, Plus, Zap, Bell, Sliders
+    ChevronRight, Settings, Plus, Zap, Bell, Sliders, UserPlus
 } from 'lucide-react';
 import { analyticsAPI, jobsAPI, usersAPI, incentiveRulesAPI } from '../services/api';
 import Navbar from '../components/common/Navbar';
@@ -13,6 +13,7 @@ import IncentiveRulesManager from '../components/manager/IncentiveRulesManager';
 import JobsManager from '../components/manager/JobsManager';
 import PendingRequests from '../components/manager/PendingRequests';
 import TechnicianSettings from '../components/manager/TechnicianSettings';
+import PendingTechnicians from '../components/manager/PendingTechnicians';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     LineChart, Line, PieChart, Pie, Cell
@@ -46,7 +47,8 @@ const ManagerDashboard = () => {
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: BarChart3 },
-        { id: 'pending', label: 'Approvals', icon: Bell, badge: true },
+        { id: 'tech-approvals', label: 'Tech Approvals', icon: UserPlus },
+        { id: 'pending', label: 'Job Requests', icon: Bell, badge: true },
         { id: 'leaderboard', label: 'Leaderboard', icon: Award },
         { id: 'bottlenecks', label: 'Bottlenecks', icon: AlertTriangle },
         { id: 'jobs', label: 'Jobs', icon: Briefcase },
@@ -251,6 +253,7 @@ const ManagerDashboard = () => {
                         </div>
                     )}
 
+                    {activeTab === 'tech-approvals' && <PendingTechnicians />}
                     {activeTab === 'pending' && <PendingRequests />}
                     {activeTab === 'leaderboard' && <Leaderboard />}
                     {activeTab === 'bottlenecks' && <BottleneckDetector />}

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { analyticsAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import { Trophy, TrendingUp, Clock, DollarSign, Award, Loader2 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 
 const Leaderboard = () => {
+    const { isDark } = useTheme();
     const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -28,7 +30,7 @@ const Leaderboard = () => {
         if (rank === 1) return 'bg-yellow-500';
         if (rank === 2) return 'bg-gray-400';
         if (rank === 3) return 'bg-amber-600';
-        return 'bg-dark-600';
+        return isDark ? 'bg-dark-600' : 'bg-gray-200';
     };
 
     const getRankEmoji = (rank) => {
@@ -49,11 +51,11 @@ const Leaderboard = () => {
     return (
         <div className="space-y-6 animate-fade-in">
             <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
                     <Trophy className="w-7 h-7 text-yellow-500" />
                     Efficiency Leaderboard
                 </h1>
-                <p className="text-dark-400 mt-1">Technicians ranked by Flagged Hours / Clocked Hours ratio</p>
+                <p className={`mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Technicians ranked by Flagged Hours / Clocked Hours ratio</p>
             </div>
 
             {/* Top 3 Podium */}
@@ -64,11 +66,11 @@ const Leaderboard = () => {
                         <div className="w-16 h-16 bg-gray-400/20 rounded-full flex items-center justify-center mx-auto mb-3">
                             <span className="text-3xl">🥈</span>
                         </div>
-                        <h3 className="font-semibold text-white">{leaderboard[1]?.name}</h3>
+                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{leaderboard[1]?.name}</h3>
                         <p className="text-2xl font-bold text-gray-400 mt-2">
                             {leaderboard[1]?.efficiencyRatio}x
                         </p>
-                        <p className="text-xs text-dark-400 mt-1">Efficiency Ratio</p>
+                        <p className={`text-xs mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Efficiency Ratio</p>
                     </div>
 
                     {/* First Place */}
@@ -76,11 +78,11 @@ const Leaderboard = () => {
                         <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-3 ring-4 ring-yellow-500/30">
                             <span className="text-4xl">🥇</span>
                         </div>
-                        <h3 className="font-semibold text-white text-lg">{leaderboard[0]?.name}</h3>
+                        <h3 className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>{leaderboard[0]?.name}</h3>
                         <p className="text-3xl font-bold text-primary-400 mt-2">
                             {leaderboard[0]?.efficiencyRatio}x
                         </p>
-                        <p className="text-xs text-dark-400 mt-1">Efficiency Ratio</p>
+                        <p className={`text-xs mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Efficiency Ratio</p>
                         <div className="mt-3 flex items-center justify-center gap-2">
                             <Award className="w-4 h-4 text-yellow-500" />
                             <span className="text-xs text-yellow-500">Top Performer</span>
@@ -92,35 +94,36 @@ const Leaderboard = () => {
                         <div className="w-16 h-16 bg-amber-600/20 rounded-full flex items-center justify-center mx-auto mb-3">
                             <span className="text-3xl">🥉</span>
                         </div>
-                        <h3 className="font-semibold text-white">{leaderboard[2]?.name}</h3>
+                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{leaderboard[2]?.name}</h3>
                         <p className="text-2xl font-bold text-amber-500 mt-2">
                             {leaderboard[2]?.efficiencyRatio}x
                         </p>
-                        <p className="text-xs text-dark-400 mt-1">Efficiency Ratio</p>
+                        <p className={`text-xs mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Efficiency Ratio</p>
                     </div>
                 </div>
             )}
 
             {/* Efficiency Chart */}
             <div className="glass-card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Efficiency Comparison</h3>
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Efficiency Comparison</h3>
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={leaderboard.slice(0, 10)} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
-                        <XAxis type="number" stroke="#666" fontSize={12} domain={[0, 'auto']} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#333' : '#e5e7eb'} horizontal={false} />
+                        <XAxis type="number" stroke={isDark ? '#666' : '#9ca3af'} fontSize={12} domain={[0, 'auto']} />
                         <YAxis
                             type="category"
                             dataKey="name"
-                            stroke="#666"
+                            stroke={isDark ? '#666' : '#9ca3af'}
                             fontSize={12}
                             width={100}
                             tickFormatter={(value) => value.split(' ')[0]}
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: '#1a1a1a',
-                                border: '1px solid #333',
-                                borderRadius: '8px'
+                                backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+                                border: `1px solid ${isDark ? '#333' : '#e5e7eb'}`,
+                                borderRadius: '8px',
+                                color: isDark ? '#fff' : '#111'
                             }}
                             formatter={(value, name) => [
                                 name === 'efficiencyRatio' ? `${value}x` : value,
@@ -157,15 +160,11 @@ const Leaderboard = () => {
                         {leaderboard.map((tech, index) => (
                             <tr key={tech.techId}>
                                 <td>
-                                    <span className={`
-                    inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold
-                    ${index < 3 ? 'text-white' : 'text-dark-400'}
-                    ${getRankColor(index + 1)}
-                  `}>
+                                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${index < 3 ? 'text-white' : isDark ? 'text-dark-400' : 'text-gray-500'} ${getRankColor(index + 1)}`}>
                                         {index < 3 ? getRankEmoji(index + 1) : index + 1}
                                     </span>
                                 </td>
-                                <td className="font-medium text-white">{tech.name}</td>
+                                <td className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{tech.name}</td>
                                 <td>
                                     <div className="flex flex-wrap gap-1">
                                         {tech.certifications.slice(0, 3).map(cert => (
@@ -174,11 +173,11 @@ const Leaderboard = () => {
                                             </span>
                                         ))}
                                         {tech.certifications.length > 3 && (
-                                            <span className="text-xs text-dark-400">+{tech.certifications.length - 3}</span>
+                                            <span className={`text-xs ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>+{tech.certifications.length - 3}</span>
                                         )}
                                     </div>
                                 </td>
-                                <td className="text-dark-300">{tech.jobsCompleted}</td>
+                                <td className={isDark ? 'text-dark-300' : 'text-gray-600'}>{tech.jobsCompleted}</td>
                                 <td>
                                     <span className="flex items-center gap-1 text-green-400">
                                         <Clock className="w-3 h-3" />
@@ -193,7 +192,7 @@ const Leaderboard = () => {
                                 </td>
                                 <td>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-20 h-2 bg-dark-700 rounded-full overflow-hidden">
+                                        <div className={`w-20 h-2 ${isDark ? 'bg-dark-700' : 'bg-gray-200'} rounded-full overflow-hidden`}>
                                             <div
                                                 className="h-full bg-primary-500 rounded-full"
                                                 style={{ width: `${Math.min(tech.efficiencyRatio * 100, 100)}%` }}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { jobsAPI, usersAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import {
     Briefcase, Plus, Clock, User, Car, Tag,
     Loader2, CheckCircle, AlertCircle, PlayCircle, X,
@@ -10,6 +11,7 @@ const certOptions = ['EV', 'Engine', 'Brakes', 'Transmission', 'Electrical', 'HV
 const priorityOptions = ['low', 'medium', 'high', 'urgent'];
 
 const JobsManager = () => {
+    const { isDark } = useTheme();
     const [jobs, setJobs] = useState([]);
     const [technicians, setTechnicians] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -120,7 +122,7 @@ const JobsManager = () => {
             case 'pending-approval': return 'badge bg-yellow-500/20 text-yellow-400';
             case 'in-progress': return 'badge bg-orange-500/20 text-orange-400';
             case 'completed': return 'badge bg-green-500/20 text-green-400';
-            default: return 'badge bg-dark-600 text-dark-400';
+            default: return `badge ${isDark ? 'bg-dark-600 text-dark-400' : 'bg-gray-100 text-gray-500'}`;
         }
     };
 
@@ -130,7 +132,7 @@ const JobsManager = () => {
             case 'high': return 'text-orange-400';
             case 'medium': return 'text-yellow-400';
             case 'low': return 'text-green-400';
-            default: return 'text-dark-400';
+            default: return isDark ? 'text-dark-400' : 'text-gray-500';
         }
     };
 
@@ -151,11 +153,11 @@ const JobsManager = () => {
         <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                    <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
                         <Briefcase className="w-7 h-7 text-primary-500" />
                         Jobs Management
                     </h1>
-                    <p className="text-dark-400 mt-1">Create, assign, and manage service orders</p>
+                    <p className={`mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Create, assign, and manage service orders</p>
                 </div>
                 <button onClick={() => setShowForm(true)} className="btn-primary">
                     <Plus className="w-5 h-5 mr-2" />
@@ -169,12 +171,9 @@ const JobsManager = () => {
                     <button
                         key={status}
                         onClick={() => setFilter(status)}
-                        className={`
-              px-4 py-2 rounded-lg text-sm font-medium transition-all
-              ${filter === status
-                                ? 'bg-primary-500 text-white'
-                                : 'bg-dark-700 text-dark-300 hover:bg-dark-600'}
-            `}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === status
+                            ? 'bg-primary-500 text-white'
+                            : isDark ? 'bg-dark-700 text-dark-300 hover:bg-dark-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                     >
                         {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
                     </button>
@@ -184,17 +183,17 @@ const JobsManager = () => {
             {/* Form Modal */}
             {showForm && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="glass-card p-6 w-full max-w-lg animate-slide-up max-h-[90vh] overflow-y-auto">
+                    <div className={`${isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'} border rounded-2xl p-6 w-full max-w-lg animate-slide-up max-h-[90vh] overflow-y-auto shadow-2xl`}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-white">Create New Job</h2>
-                            <button onClick={resetForm} className="text-dark-400 hover:text-white">
+                            <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Create New Job</h2>
+                            <button onClick={resetForm} className={isDark ? 'text-dark-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-dark-300 mb-2">Job Title</label>
+                                <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>Job Title</label>
                                 <input
                                     type="text"
                                     value={formData.title}
@@ -206,7 +205,7 @@ const JobsManager = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-dark-300 mb-2">Description</label>
+                                <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>Description</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -218,7 +217,7 @@ const JobsManager = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-dark-300 mb-2">Required Cert</label>
+                                    <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>Required Cert</label>
                                     <select
                                         value={formData.requiredCert}
                                         onChange={(e) => setFormData({ ...formData, requiredCert: e.target.value })}
@@ -231,7 +230,7 @@ const JobsManager = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-dark-300 mb-2">Book Time (mins)</label>
+                                    <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>Book Time (mins)</label>
                                     <input
                                         type="number"
                                         value={formData.bookTime}
@@ -244,19 +243,16 @@ const JobsManager = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-dark-300 mb-2">Priority</label>
+                                <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>Priority</label>
                                 <div className="grid grid-cols-4 gap-2">
                                     {priorityOptions.map(priority => (
                                         <button
                                             key={priority}
                                             type="button"
                                             onClick={() => setFormData({ ...formData, priority })}
-                                            className={`
-                        py-2 rounded-lg text-sm capitalize transition-all
-                        ${formData.priority === priority
-                                                    ? 'bg-primary-500/20 border border-primary-500 text-primary-400'
-                                                    : 'bg-dark-700 border border-dark-600 text-dark-400 hover:border-dark-500'}
-                      `}
+                                            className={`py-2 rounded-lg text-sm capitalize transition-all ${formData.priority === priority
+                                                ? 'bg-primary-500/20 border border-primary-500 text-primary-400'
+                                                : isDark ? 'bg-dark-700 border border-dark-600 text-dark-400 hover:border-dark-500' : 'bg-gray-50 border border-gray-200 text-gray-500 hover:border-gray-300'}`}
                                         >
                                             {priority}
                                         </button>
@@ -264,8 +260,8 @@ const JobsManager = () => {
                                 </div>
                             </div>
 
-                            <div className="border-t border-dark-700 pt-4">
-                                <label className="block text-sm font-medium text-dark-300 mb-3">Vehicle Info</label>
+                            <div className={`border-t ${isDark ? 'border-dark-700' : 'border-gray-200'} pt-4`}>
+                                <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-3`}>Vehicle Info</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <input
                                         type="text"
@@ -306,19 +302,19 @@ const JobsManager = () => {
             {/* Assign/Reassign Modal */}
             {showAssignModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="glass-card p-6 w-full max-w-md animate-slide-up">
+                    <div className={`${isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'} border rounded-2xl p-6 w-full max-w-md animate-slide-up shadow-2xl`}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-white">
+                            <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                 {showAssignModal.assignedTech ? 'Reassign Job' : 'Assign Job'}
                             </h2>
-                            <button onClick={closeAssignModal} className="text-dark-400 hover:text-white">
+                            <button onClick={closeAssignModal} className={isDark ? 'text-dark-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="mb-4 p-3 bg-dark-700 rounded-lg">
-                            <p className="text-white font-medium">{showAssignModal.title}</p>
-                            <p className="text-sm text-dark-400">{showAssignModal.requiredCert} • {showAssignModal.bookTime} min</p>
+                        <div className={`mb-4 p-3 ${isDark ? 'bg-dark-700' : 'bg-gray-100'} rounded-lg`}>
+                            <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{showAssignModal.title}</p>
+                            <p className={`text-sm ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>{showAssignModal.requiredCert} • {showAssignModal.bookTime} min</p>
                             {showAssignModal.assignedTech && (
                                 <p className="text-sm text-yellow-400 mt-1">
                                     Currently assigned to: {showAssignModal.assignedTech.name}
@@ -327,7 +323,7 @@ const JobsManager = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium text-dark-300 mb-2">
+                            <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                 Select Technician ({getEligibleTechs(showAssignModal).length} eligible)
                             </label>
                             <select
@@ -346,7 +342,7 @@ const JobsManager = () => {
 
                         {showAssignModal.assignedTech && (
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-dark-300 mb-2">
+                                <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                     Reason for Reassignment
                                 </label>
                                 <input
@@ -399,30 +395,30 @@ const JobsManager = () => {
                     <tbody>
                         {filteredJobs.length === 0 ? (
                             <tr>
-                                <td colSpan="8" className="text-center py-8 text-dark-400">
+                                <td colSpan="8" className={`text-center py-8 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>
                                     No jobs found
                                 </td>
                             </tr>
                         ) : (
                             filteredJobs.map((job) => (
                                 <tr key={job._id}>
-                                    <td className="font-mono text-xs text-dark-400">{job.serviceOrderNumber}</td>
+                                    <td className={`font-mono text-xs ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>{job.serviceOrderNumber}</td>
                                     <td>
                                         <div>
-                                            <p className="font-medium text-white">{job.title}</p>
+                                            <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{job.title}</p>
                                             <span className={`text-xs ${getPriorityColor(job.priority)}`}>
                                                 {job.priority}
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="text-dark-300">
+                                    <td className={isDark ? 'text-dark-300' : 'text-gray-600'}>
                                         {job.vehicleInfo?.make} {job.vehicleInfo?.model}
                                     </td>
                                     <td>
                                         <span className="badge-primary">{job.requiredCert}</span>
                                     </td>
                                     <td>
-                                        <span className="flex items-center gap-1 text-dark-300">
+                                        <span className={`flex items-center gap-1 ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                                             <Clock className="w-3 h-3" />
                                             {job.bookTime}m
                                         </span>
@@ -433,7 +429,7 @@ const JobsManager = () => {
                                             <span className="ml-1">{job.status}</span>
                                         </span>
                                     </td>
-                                    <td className="text-dark-300">
+                                    <td className={isDark ? 'text-dark-300' : 'text-gray-600'}>
                                         {job.assignedTech?.name || '-'}
                                     </td>
                                     <td>
@@ -441,8 +437,8 @@ const JobsManager = () => {
                                             <button
                                                 onClick={() => setShowAssignModal(job)}
                                                 className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${job.assignedTech
-                                                        ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
-                                                        : 'bg-primary-500/20 text-primary-400 hover:bg-primary-500/30'
+                                                    ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+                                                    : 'bg-primary-500/20 text-primary-400 hover:bg-primary-500/30'
                                                     }`}
                                             >
                                                 {job.assignedTech ? (
@@ -470,4 +466,3 @@ const JobsManager = () => {
 };
 
 export default JobsManager;
-

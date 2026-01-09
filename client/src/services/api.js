@@ -85,4 +85,16 @@ export const analyticsAPI = {
     getWeeklyTrends: () => api.get('/analytics/weekly-trends')
 };
 
+// Shop APIs
+export const shopAPI = {
+    getMyShop: () => api.get('/shop/my-shop'),
+    getPendingTechs: () => api.get('/shop/pending-techs'),
+    approveTech: (id) => api.post(`/shop/approve-tech/${id}`),
+    rejectTech: (id, data) => api.post(`/shop/reject-tech/${id}`, data),
+    removeTech: (id) => api.post(`/shop/remove-tech/${id}`),
+    regenerateCode: () => api.put('/shop/regenerate-code'),
+    updateShop: (data) => api.put('/shop/update', data),
+    validateCode: (code) => api.get(`/shop/validate-code/${code}`)
+};
+
 export default api;

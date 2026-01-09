@@ -10,7 +10,12 @@ const router = express.Router();
 // @access  Private/Manager
 router.get('/', protect, managerOnly, async (req, res) => {
     try {
-        const users = await User.find({ role: 'technician' })
+        // Only get technicians from manager's shop
+        const users = await User.find({
+            role: 'technician',
+            shop: req.user.shop,
+            shopStatus: 'approved'
+        })
             .select('-password')
             .sort({ name: 1 });
 

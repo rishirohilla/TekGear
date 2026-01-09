@@ -62,16 +62,16 @@ const Login = () => {
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
-                            <label className="block text-sm font-medium text-dark-300 mb-2">
+                            <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                 Email Address
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-dark-500' : 'text-gray-400'}`} />
                                 <input
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="input-field pl-12"
+                                    className="input-field !pl-12"
                                     placeholder="Enter your email"
                                     required
                                 />
@@ -79,23 +79,23 @@ const Login = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-dark-300 mb-2">
+                            <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                 Password
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" />
+                                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-dark-500' : 'text-gray-400'}`} />
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    className="input-field pl-12 pr-12"
+                                    className="input-field !pl-12 !pr-12"
                                     placeholder="Enter your password"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-500 hover:text-dark-300"
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-dark-500 hover:text-dark-300' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -116,7 +116,7 @@ const Login = () => {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-dark-400">
+                        <p className={isDark ? 'text-dark-400' : 'text-gray-500'}>
                             Don't have an account?{' '}
                             <Link to="/signup" className="text-primary-400 hover:text-primary-300 font-medium">
                                 Sign up
@@ -125,13 +125,13 @@ const Login = () => {
                     </div>
 
                     {/* Demo credentials */}
-                    <div className="mt-6 p-4 bg-dark-700/50 rounded-xl">
-                        <p className="text-xs text-dark-400 mb-2">Demo Credentials:</p>
+                    <div className={`mt-6 p-4 ${isDark ? 'bg-dark-700/50' : 'bg-gray-100'} rounded-xl`}>
+                        <p className={`text-xs mb-2 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Demo Credentials:</p>
                         <div className="space-y-1 text-xs">
-                            <p className="text-dark-300">
+                            <p className={isDark ? 'text-dark-300' : 'text-gray-600'}>
                                 <span className="text-primary-400">Manager:</span> manager@tekgear.com / manager123
                             </p>
-                            <p className="text-dark-300">
+                            <p className={isDark ? 'text-dark-300' : 'text-gray-600'}>
                                 <span className="text-primary-400">Technician:</span> tech1@tekgear.com / tech123
                             </p>
                         </div>

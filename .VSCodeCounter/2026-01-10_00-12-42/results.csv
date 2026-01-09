@@ -1,0 +1,32 @@
+"filename", "language", "JSON", "JavaScript", "HTML", "JavaScript JSX", "CSS", "comment", "blank", "total"
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/index.html", "HTML", 0, 0, 19, 0, 0, 0, 3, 22
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/package-lock.json", "JSON", 3318, 0, 0, 0, 0, 0, 1, 3319
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/package.json", "JSON", 28, 0, 0, 0, 0, 0, 0, 28
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/postcss.config.js", "JavaScript", 0, 6, 0, 0, 0, 0, 1, 7
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/App.jsx", "JavaScript JSX", 0, 0, 0, 67, 0, 7, 10, 84
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/common/Navbar.jsx", "JavaScript JSX", 0, 0, 0, 236, 0, 18, 21, 275
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/common/NotificationToast.jsx", "JavaScript JSX", 0, 0, 0, 112, 0, 1, 20, 133
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/common/ProtectedRoute.jsx", "JavaScript JSX", 0, 0, 0, 26, 0, 1, 7, 34
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/manager/BottleneckDetector.jsx", "JavaScript JSX", 0, 0, 0, 149, 0, 3, 13, 165
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/manager/IncentiveRulesManager.jsx", "JavaScript JSX", 0, 0, 0, 294, 0, 3, 23, 320
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/manager/JobsManager.jsx", "JavaScript JSX", 0, 0, 0, 431, 0, 5, 33, 469
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/manager/Leaderboard.jsx", "JavaScript JSX", 0, 0, 0, 196, 0, 6, 14, 216
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/manager/PendingRequests.jsx", "JavaScript JSX", 0, 0, 0, 197, 0, 4, 16, 217
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/manager/PendingTechnicians.jsx", "JavaScript JSX", 0, 0, 0, 212, 0, 4, 14, 230
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/manager/TechnicianSettings.jsx", "JavaScript JSX", 0, 0, 0, 273, 0, 3, 15, 291
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/technician/AvailableJobs.jsx", "JavaScript JSX", 0, 0, 0, 232, 0, 6, 20, 258
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/technician/EarningsProgress.jsx", "JavaScript JSX", 0, 0, 0, 122, 0, 7, 12, 141
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/components/technician/JobTimer.jsx", "JavaScript JSX", 0, 0, 0, 201, 0, 9, 23, 233
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/context/AuthContext.jsx", "JavaScript JSX", 0, 0, 0, 94, 0, 2, 18, 114
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/context/ThemeContext.jsx", "JavaScript JSX", 0, 0, 0, 26, 0, 0, 7, 33
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/index.css", "CSS", 0, 0, 0, 0, 242, 0, 66, 308
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/main.jsx", "JavaScript JSX", 0, 0, 0, 12, 0, 0, 3, 15
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/pages/LandingPage.jsx", "JavaScript JSX", 0, 0, 0, 601, 0, 27, 41, 669
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/pages/Login.jsx", "JavaScript JSX", 0, 0, 0, 126, 0, 4, 16, 146
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/pages/ManagerDashboard.jsx", "JavaScript JSX", 0, 0, 0, 268, 0, 8, 19, 295
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/pages/Signup.jsx", "JavaScript JSX", 0, 0, 0, 335, 0, 11, 27, 373
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/pages/TechDashboard.jsx", "JavaScript JSX", 0, 0, 0, 201, 0, 9, 22, 232
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/src/services/api.js", "JavaScript", 0, 79, 0, 0, 0, 10, 12, 101
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/tailwind.config.js", "JavaScript", 0, 65, 0, 0, 0, 0, 1, 66
+"/Users/rishirohilla/Desktop/crypto/RishiGithubOnly/TekGear/client/vite.config.js", "JavaScript", 0, 14, 0, 0, 0, 0, 2, 16
+"Total", "-", 3346, 164, 19, 4411, 242, 148, 480, 8810

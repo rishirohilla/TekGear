@@ -49,6 +49,12 @@ const jobSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    // Multi-shop support
+    shop: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Shop',
+        required: [true, 'Shop is required']
+    },
     startedAt: {
         type: Date,
         default: null

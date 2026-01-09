@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { analyticsAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import { AlertTriangle, Clock, TrendingDown, Loader2, AlertCircle } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts';
 
 const BottleneckDetector = () => {
+    const { isDark } = useTheme();
     const [bottlenecks, setBottlenecks] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -42,11 +44,11 @@ const BottleneckDetector = () => {
     return (
         <div className="space-y-6 animate-fade-in">
             <div>
-                <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
                     <AlertTriangle className="w-7 h-7 text-orange-500" />
                     Bottleneck Detector
                 </h1>
-                <p className="text-dark-400 mt-1">Job types consistently exceeding book time (Loss makers)</p>
+                <p className={`mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Job types consistently exceeding book time (Loss makers)</p>
             </div>
 
             {bottlenecks.length === 0 ? (
@@ -54,8 +56,8 @@ const BottleneckDetector = () => {
                     <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                         <TrendingDown className="w-8 h-8 text-green-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-white">No Bottlenecks Detected!</h3>
-                    <p className="text-dark-400 mt-2">All job types are performing within or under book time.</p>
+                    <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>No Bottlenecks Detected!</h3>
+                    <p className={`mt-2 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>All job types are performing within or under book time.</p>
                 </div>
             ) : (
                 <>
@@ -66,8 +68,8 @@ const BottleneckDetector = () => {
                                 <AlertCircle className="w-5 h-5 text-orange-400" />
                             </div>
                             <div>
-                                <h3 className="font-semibold text-white">Attention Required</h3>
-                                <p className="text-dark-300 text-sm mt-1">
+                                <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Attention Required</h3>
+                                <p className={`text-sm mt-1 ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                                     {bottlenecks.length} job type{bottlenecks.length > 1 ? 's are' : ' is'} consistently exceeding book time.
                                     Total time loss: <span className="text-orange-400 font-semibold">
                                         {bottlenecks.reduce((acc, b) => acc + b.timeLoss, 0)} minutes
@@ -79,17 +81,18 @@ const BottleneckDetector = () => {
 
                     {/* Time Loss Chart */}
                     <div className="glass-card p-6">
-                        <h3 className="text-lg font-semibold text-white mb-4">Time Loss by Certification</h3>
+                        <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-4`}>Time Loss by Certification</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={bottlenecks}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                                <XAxis dataKey="certification" stroke="#666" fontSize={12} />
-                                <YAxis stroke="#666" fontSize={12} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#333' : '#e5e7eb'} />
+                                <XAxis dataKey="certification" stroke={isDark ? '#666' : '#9ca3af'} fontSize={12} />
+                                <YAxis stroke={isDark ? '#666' : '#9ca3af'} fontSize={12} />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: '#1a1a1a',
-                                        border: '1px solid #333',
-                                        borderRadius: '8px'
+                                        backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+                                        border: `1px solid ${isDark ? '#333' : '#e5e7eb'}`,
+                                        borderRadius: '8px',
+                                        color: isDark ? '#fff' : '#111'
                                     }}
                                     formatter={(value, name) => [
                                         name === 'timeLoss' ? `${value} mins` : `${value}%`,
@@ -125,25 +128,25 @@ const BottleneckDetector = () => {
 
                                     <div className="space-y-3">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-dark-400">Total Jobs</span>
-                                            <span className="text-white font-medium">{bottleneck.totalJobs}</span>
+                                            <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>Total Jobs</span>
+                                            <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{bottleneck.totalJobs}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-dark-400">Avg Book Time</span>
-                                            <span className="text-white font-medium">{bottleneck.avgBookTime}m</span>
+                                            <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>Avg Book Time</span>
+                                            <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{bottleneck.avgBookTime}m</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-dark-400">Avg Actual Time</span>
+                                            <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>Avg Actual Time</span>
                                             <span className={`font-medium ${colors.text}`}>{bottleneck.avgActualTime}m</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-dark-400">Time Loss</span>
+                                            <span className={isDark ? 'text-dark-400' : 'text-gray-500'}>Time Loss</span>
                                             <span className="text-orange-400 font-semibold">+{bottleneck.timeLoss}m</span>
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 pt-4 border-t border-dark-700">
-                                        <div className="flex items-center gap-2 text-xs text-dark-400">
+                                    <div className={`mt-4 pt-4 border-t ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
+                                        <div className={`flex items-center gap-2 text-xs ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>
                                             <Clock className="w-3 h-3" />
                                             <span>Consider reviewing book time estimates</span>
                                         </div>

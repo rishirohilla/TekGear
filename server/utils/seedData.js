@@ -1,10 +1,12 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const User = require('../models/User');
 const Job = require('../models/Job');
 const IncentiveRule = require('../models/IncentiveRule');
+const Shop = require('../models/Shop');
 
 // Seed data configuration
 const certifications = ['EV', 'Engine', 'Brakes', 'Transmission', 'Electrical', 'HVAC', 'Diagnostics'];
@@ -74,19 +76,36 @@ const seedDatabase = async () => {
         await User.deleteMany({});
         await Job.deleteMany({});
         await IncentiveRule.deleteMany({});
+        await Shop.deleteMany({});
         console.log('🗑️  Cleared existing data');
 
-        // Create Manager account
+        // Create Manager account first (without shop)
         const manager = await User.create({
             name: 'Sarah Mitchell',
             email: 'manager@tekgear.com',
             password: 'manager123',
             role: 'manager',
-            certifications: []
+            certifications: [],
+            shopStatus: 'approved',
+            isActive: true
         });
         console.log('👔 Created Manager:', manager.email);
 
-        // Create Technicians (15-20)
+        // Create the Demo Shop
+        const shop = await Shop.create({
+            name: 'Downtown Auto Service',
+            code: 'TG-DEMO',
+            address: '123 Main Street, Downtown',
+            phone: '555-0100',
+            manager: manager._id
+        });
+        console.log('🏪 Created Shop:', shop.name, '| Code:', shop.code);
+
+        // Update manager with shop reference
+        manager.shop = shop._id;
+        await manager.save();
+
+        // Create Technicians (18 techs for the shop)
         const technicians = [];
         for (let i = 0; i < 18; i++) {
             const tech = await User.create({
@@ -99,11 +118,14 @@ const seedDatabase = async () => {
                 weeklyEarnings: randomFloat(0, 200),
                 weeklyBonusGoal: randomInt(300, 600),
                 totalJobsCompleted: randomInt(5, 50),
-                totalTimeSaved: randomInt(30, 300)
+                totalTimeSaved: randomInt(30, 300),
+                shop: shop._id,
+                shopStatus: 'approved',
+                isActive: true
             });
             technicians.push(tech);
         }
-        console.log(`👨‍🔧 Created ${technicians.length} Technicians`);
+        console.log(`👨‍🔧 Created ${technicians.length} Technicians for ${shop.name}`);
 
         // Create Incentive Rule
         const incentiveRule = await IncentiveRule.create({
@@ -117,7 +139,7 @@ const seedDatabase = async () => {
         });
         console.log('💰 Created Incentive Rule:', incentiveRule.name);
 
-        // Create Jobs (50+ with varying statuses)
+        // Create Jobs (60 jobs for the shop)
         const jobs = [];
         const statuses = ['available', 'available', 'available', 'in-progress', 'completed', 'completed', 'completed', 'completed'];
 
@@ -142,7 +164,8 @@ const seedDatabase = async () => {
                 bookTime,
                 status,
                 priority: randomElement(['low', 'medium', 'medium', 'high', 'urgent']),
-                createdBy: manager._id
+                createdBy: manager._id,
+                shop: shop._id // Assign all jobs to the demo shop
             };
 
             // Assign tech and add completion data for in-progress/completed jobs
@@ -174,12 +197,15 @@ const seedDatabase = async () => {
             const job = await Job.create(jobData);
             jobs.push(job);
         }
-        console.log(`🔧 Created ${jobs.length} Jobs`);
+        console.log(`🔧 Created ${jobs.length} Jobs for ${shop.name}`);
 
         // Summary
         console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('🎉 Database seeded successfully!');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('\n🏪 Shop Created:');
+        console.log(`   Name: ${shop.name}`);
+        console.log(`   Code: ${shop.code}`);
         console.log('\n📋 Login Credentials:');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('Manager: manager@tekgear.com / manager123');

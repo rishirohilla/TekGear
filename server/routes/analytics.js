@@ -11,12 +11,18 @@ const router = express.Router();
 // @access  Private/Manager
 router.get('/leaderboard', protect, managerOnly, async (req, res) => {
     try {
-        const technicians = await User.find({ role: 'technician', isActive: true });
+        // Only get technicians from manager's shop
+        const technicians = await User.find({
+            role: 'technician',
+            isActive: true,
+            shop: req.user.shop
+        });
 
         const leaderboard = await Promise.all(technicians.map(async (tech) => {
             const completedJobs = await Job.find({
                 assignedTech: tech._id,
-                status: 'completed'
+                status: 'completed',
+                shop: req.user.shop
             });
 
             const totalBookTime = completedJobs.reduce((acc, job) => acc + job.bookTime, 0);
@@ -61,7 +67,11 @@ router.get('/leaderboard', protect, managerOnly, async (req, res) => {
 // @access  Private/Manager
 router.get('/bottlenecks', protect, managerOnly, async (req, res) => {
     try {
-        const completedJobs = await Job.find({ status: 'completed' });
+        // Only get jobs from manager's shop
+        const completedJobs = await Job.find({
+            status: 'completed',
+            shop: req.user.shop
+        });
 
         // Group by certification type
         const certGroups = {};
@@ -113,13 +123,16 @@ router.get('/bottlenecks', protect, managerOnly, async (req, res) => {
 // @access  Private/Manager
 router.get('/overview', protect, managerOnly, async (req, res) => {
     try {
-        const totalTechs = await User.countDocuments({ role: 'technician', isActive: true });
-        const totalJobs = await Job.countDocuments();
-        const completedJobs = await Job.countDocuments({ status: 'completed' });
-        const inProgressJobs = await Job.countDocuments({ status: 'in-progress' });
-        const availableJobs = await Job.countDocuments({ status: 'available' });
+        // Filter by manager's shop
+        const shopFilter = { shop: req.user.shop };
 
-        const completedJobsData = await Job.find({ status: 'completed' });
+        const totalTechs = await User.countDocuments({ role: 'technician', isActive: true, shopStatus: 'approved', ...shopFilter });
+        const totalJobs = await Job.countDocuments(shopFilter);
+        const completedJobs = await Job.countDocuments({ status: 'completed', ...shopFilter });
+        const inProgressJobs = await Job.countDocuments({ status: 'in-progress', ...shopFilter });
+        const availableJobs = await Job.countDocuments({ status: 'available', ...shopFilter });
+
+        const completedJobsData = await Job.find({ status: 'completed', ...shopFilter });
         const totalTimeSaved = completedJobsData.reduce((acc, job) => acc + (job.timeSaved || 0), 0);
         const totalIncentivesPaid = completedJobsData.reduce((acc, job) => acc + (job.incentiveEarned || 0), 0);
         const totalBookTime = completedJobsData.reduce((acc, job) => acc + job.bookTime, 0);
@@ -163,7 +176,8 @@ router.get('/weekly-trends', protect, managerOnly, async (req, res) => {
 
             const jobs = await Job.find({
                 status: 'completed',
-                completedAt: { $gte: weekStart, $lt: weekEnd }
+                completedAt: { $gte: weekStart, $lt: weekEnd },
+                shop: req.user.shop // Filter by shop
             });
 
             const totalBookTime = jobs.reduce((acc, job) => acc + job.bookTime, 0);

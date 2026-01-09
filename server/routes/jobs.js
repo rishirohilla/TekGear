@@ -16,11 +16,15 @@ router.get('/', protect, async (req, res) => {
         let query = {};
 
         if (req.user.role === 'technician') {
-            // Technicians only see available jobs matching their certifications
+            // Technicians only see available jobs matching their certifications AND their shop
             query = {
                 status: 'available',
-                requiredCert: { $in: req.user.certifications }
+                requiredCert: { $in: req.user.certifications },
+                shop: req.user.shop
             };
+        } else {
+            // Managers only see their shop's jobs
+            query = { shop: req.user.shop };
         }
 
         // Filter by status if provided
@@ -56,6 +60,7 @@ router.get('/', protect, async (req, res) => {
 router.get('/my-jobs', protect, async (req, res) => {
     try {
         const jobs = await Job.find({
+            shop: req.user.shop, // Only jobs from their shop
             $or: [
                 { assignedTech: req.user._id },
                 { requestedBy: req.user._id }
@@ -81,7 +86,10 @@ router.get('/my-jobs', protect, async (req, res) => {
 // NOTE: This route MUST be defined BEFORE /:id routes!
 router.get('/pending-requests', protect, managerOnly, async (req, res) => {
     try {
-        const pendingJobs = await Job.find({ requestStatus: 'pending' })
+        const pendingJobs = await Job.find({
+            requestStatus: 'pending',
+            shop: req.user.shop // Only jobs from manager's shop
+        })
             .populate('requestedBy', 'name email certifications')
             .sort({ createdAt: -1 });
 
@@ -147,7 +155,8 @@ router.post('/', protect, managerOnly, async (req, res) => {
     try {
         const jobData = {
             ...req.body,
-            createdBy: req.user._id
+            createdBy: req.user._id,
+            shop: req.user.shop // Assign to manager's shop
         };
 
         const job = await Job.create(jobData);

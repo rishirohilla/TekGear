@@ -307,9 +307,171 @@ const sendJobApprovalNotification = async (tech, approvalData) => {
   }
 };
 
+// Send notification to manager when a tech requests to join shop
+const sendManagerTechRequestNotification = async (manager, requestData) => {
+  const { techName, techEmail, techCertifications, shopName, approvalToken } = requestData;
+  const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
+
+  const transporter = createTransporter();
+  const subject = `🔔 New Technician Request - ${techName} wants to join ${shopName}`;
+
+  const emailHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #0a0a0a; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .card { background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border-radius: 16px; padding: 32px; border: 1px solid #4cad9a33; }
+          .header { text-align: center; margin-bottom: 24px; }
+          .logo { color: #4cad9a; font-size: 28px; font-weight: bold; }
+          .title { color: #ffffff; font-size: 24px; margin: 16px 0; }
+          .info-box { background: #1a1a1a; border-radius: 8px; padding: 16px; margin: 20px 0; }
+          .label { color: #888888; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+          .value { color: #ffffff; font-size: 16px; font-weight: 500; }
+          .certs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+          .cert-badge { background: #4cad9a22; color: #4cad9a; padding: 4px 12px; border-radius: 16px; font-size: 12px; }
+          .buttons { display: flex; gap: 16px; justify-content: center; margin: 32px 0; }
+          .btn { padding: 14px 32px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block; }
+          .btn-approve { background: #4cad9a; color: white; }
+          .btn-reject { background: #ef4444; color: white; }
+          .or-text { color: #666; text-align: center; margin: 16px 0; }
+          .footer { text-align: center; color: #666666; font-size: 12px; margin-top: 32px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="card">
+            <div class="header">
+              <div class="logo">⚡ TekGear</div>
+              <div class="title">New Technician Request</div>
+            </div>
+            
+            <div class="info-box">
+              <div class="label">Technician</div>
+              <div class="value">${techName}</div>
+              <div style="color: #888; font-size: 14px;">${techEmail}</div>
+            </div>
+            
+            <div class="info-box">
+              <div class="label">Requesting to join</div>
+              <div class="value">${shopName}</div>
+            </div>
+            
+            <div class="info-box">
+              <div class="label">Certifications</div>
+              <div class="certs">
+                ${techCertifications.map(cert => `<span class="cert-badge">${cert}</span>`).join('')}
+              </div>
+            </div>
+            
+            <div class="buttons">
+              <a href="${serverUrl}/api/shop/email-approve/${approvalToken}" class="btn btn-approve">✓ Approve</a>
+              <a href="${serverUrl}/api/shop/email-reject/${approvalToken}" class="btn btn-reject">✕ Reject</a>
+            </div>
+            
+            <p class="or-text">or manage from your dashboard</p>
+            
+            <div class="footer">
+              TekGear - Dealership Productivity Platform
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"TekGear" <${process.env.SMTP_USER}>`,
+        to: manager.email,
+        subject,
+        html: emailHtml
+      });
+      console.log(`📧 Tech request notification sent to manager: ${manager.email}`);
+    } catch (error) {
+      console.error('Email send failed:', error.message);
+    }
+  } else {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`📧 TECH REQUEST (Dev Mode)`);
+    console.log(`To Manager: ${manager.email}`);
+    console.log(`Tech: ${techName} (${techEmail})`);
+    console.log(`Shop: ${shopName}`);
+    console.log(`Approve: ${serverUrl}/api/shop/email-approve/${approvalToken}`);
+    console.log(`Reject: ${serverUrl}/api/shop/email-reject/${approvalToken}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  }
+};
+
+// Send notification to tech about their account approval/rejection
+const sendTechApprovalNotification = async (tech, approvalData) => {
+  const { shopName, approved, reason, managerName } = approvalData;
+
+  const transporter = createTransporter();
+  const subject = approved
+    ? `✅ Welcome to ${shopName}! Your account is approved`
+    : `❌ Account Request Update - ${shopName}`;
+
+  const message = approved
+    ? `Great news! Your request to join ${shopName} has been approved by ${managerName}. You can now log in and start working.`
+    : `Your request to join ${shopName} was not approved. ${reason || ''}`;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"TekGear" <${process.env.SMTP_USER}>`,
+        to: tech.email,
+        subject,
+        html: `<h2>Account Status: ${approved ? 'APPROVED' : 'NOT APPROVED'}</h2><p>Hi ${tech.name},</p><p>${message}</p>${approved ? `<p><a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/login">Log In Now</a></p>` : ''}`
+      });
+      console.log(`📧 Tech ${approved ? 'approval' : 'rejection'} sent to ${tech.email}`);
+    } catch (error) {
+      console.error('Email send failed:', error.message);
+    }
+  } else {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`📧 TECH ACCOUNT ${approved ? 'APPROVED' : 'REJECTED'} (Dev Mode)`);
+    console.log(`To: ${tech.email}`);
+    console.log(`Shop: ${shopName}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  }
+};
+
+// Send confirmation to tech when they submit account request
+const sendTechRequestConfirmation = async (tech, shopName) => {
+  const transporter = createTransporter();
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"TekGear" <${process.env.SMTP_USER}>`,
+        to: tech.email,
+        subject: `📝 Account Request Received - ${shopName}`,
+        html: `<h2>Request Received!</h2><p>Hi ${tech.name},</p><p>Your request to join <strong>${shopName}</strong> has been received. The manager will review and you'll be notified.</p><p style="color: orange;">⏳ PENDING APPROVAL</p>`
+      });
+      console.log(`📧 Request confirmation sent to ${tech.email}`);
+    } catch (error) {
+      console.error('Email send failed:', error.message);
+    }
+  } else {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log(`📧 TECH REQUEST CONFIRMATION (Dev Mode)`);
+    console.log(`To: ${tech.email}`);
+    console.log(`Shop: ${shopName}`);
+    console.log(`Status: PENDING`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  }
+};
+
 module.exports = {
   sendBonusNotification,
   sendWeeklySummary,
   sendJobRequestNotification,
-  sendJobApprovalNotification
+  sendJobApprovalNotification,
+  sendManagerTechRequestNotification,
+  sendTechApprovalNotification,
+  sendTechRequestConfirmation
 };
+

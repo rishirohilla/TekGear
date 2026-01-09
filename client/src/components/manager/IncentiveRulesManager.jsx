@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { incentiveRulesAPI } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import {
     DollarSign, Plus, Edit2, Trash2, Check, X,
     Clock, Loader2, Zap, AlertCircle
 } from 'lucide-react';
 
 const IncentiveRulesManager = () => {
+    const { isDark } = useTheme();
     const [rules, setRules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -104,11 +106,11 @@ const IncentiveRulesManager = () => {
         <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+                    <h1 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} flex items-center gap-3`}>
                         <DollarSign className="w-7 h-7 text-green-500" />
                         Incentive Rules
                     </h1>
-                    <p className="text-dark-400 mt-1">Define bonus rules for beating the clock</p>
+                    <p className={`mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Define bonus rules for beating the clock</p>
                 </div>
                 <button
                     onClick={() => setShowForm(true)}
@@ -126,12 +128,12 @@ const IncentiveRulesManager = () => {
                         <Zap className="w-5 h-5 text-primary-400" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-white">How Incentive Rules Work</h3>
-                        <p className="text-dark-300 text-sm mt-1">
+                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>How Incentive Rules Work</h3>
+                        <p className={`text-sm mt-1 ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                             When a technician completes a job in less than the book time, they earn a bonus.
                             The bonus is calculated as: <span className="text-primary-400">(Time Saved ÷ Threshold) × Bonus Per Unit</span>
                         </p>
-                        <p className="text-dark-400 text-xs mt-2">
+                        <p className={`text-xs mt-2 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>
                             Example: If threshold is 30 mins and bonus is $10, saving 45 mins = 1 unit = $10 bonus
                         </p>
                     </div>
@@ -141,19 +143,19 @@ const IncentiveRulesManager = () => {
             {/* Form Modal */}
             {showForm && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="glass-card p-6 w-full max-w-lg animate-slide-up">
+                    <div className={`${isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'} border rounded-2xl p-6 w-full max-w-lg animate-slide-up shadow-2xl`}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-semibold text-white">
+                            <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                                 {editingRule ? 'Edit Rule' : 'Create New Rule'}
                             </h2>
-                            <button onClick={resetForm} className="text-dark-400 hover:text-white">
+                            <button onClick={resetForm} className={`${isDark ? 'text-dark-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}>
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-medium text-dark-300 mb-2">
+                                <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                     Rule Name
                                 </label>
                                 <input
@@ -167,7 +169,7 @@ const IncentiveRulesManager = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-dark-300 mb-2">
+                                <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                     Description
                                 </label>
                                 <textarea
@@ -181,7 +183,7 @@ const IncentiveRulesManager = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-dark-300 mb-2">
+                                    <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                         <Clock className="w-4 h-4 inline mr-1" />
                                         Time Threshold (mins)
                                     </label>
@@ -193,11 +195,11 @@ const IncentiveRulesManager = () => {
                                         min={1}
                                         required
                                     />
-                                    <p className="text-xs text-dark-500 mt-1">Minutes saved per bonus unit</p>
+                                    <p className={`text-xs mt-1 ${isDark ? 'text-dark-500' : 'text-gray-400'}`}>Minutes saved per bonus unit</p>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-dark-300 mb-2">
+                                    <label className={`block text-sm font-medium ${isDark ? 'text-dark-300' : 'text-gray-600'} mb-2`}>
                                         <DollarSign className="w-4 h-4 inline mr-1" />
                                         Bonus Per Unit ($)
                                     </label>
@@ -210,7 +212,7 @@ const IncentiveRulesManager = () => {
                                         step={0.01}
                                         required
                                     />
-                                    <p className="text-xs text-dark-500 mt-1">Bonus amount per unit</p>
+                                    <p className={`text-xs mt-1 ${isDark ? 'text-dark-500' : 'text-gray-400'}`}>Bonus amount per unit</p>
                                 </div>
                             </div>
 
@@ -218,14 +220,11 @@ const IncentiveRulesManager = () => {
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
-                                    className={`
-                    w-12 h-6 rounded-full transition-all duration-200 flex items-center
-                    ${formData.isActive ? 'bg-primary-500 justify-end' : 'bg-dark-600 justify-start'}
-                  `}
+                                    className={`w-12 h-6 rounded-full transition-all duration-200 flex items-center ${formData.isActive ? 'bg-primary-500 justify-end' : isDark ? 'bg-dark-600 justify-start' : 'bg-gray-300 justify-start'}`}
                                 >
                                     <div className="w-5 h-5 bg-white rounded-full mx-0.5" />
                                 </button>
-                                <span className="text-sm text-dark-300">
+                                <span className={`text-sm ${isDark ? 'text-dark-300' : 'text-gray-600'}`}>
                                     {formData.isActive ? 'Active' : 'Inactive'}
                                 </span>
                             </div>
@@ -246,11 +245,11 @@ const IncentiveRulesManager = () => {
             {/* Rules List */}
             {rules.length === 0 ? (
                 <div className="glass-card p-12 text-center">
-                    <div className="w-16 h-16 bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <DollarSign className="w-8 h-8 text-dark-400" />
+                    <div className={`w-16 h-16 ${isDark ? 'bg-dark-700' : 'bg-gray-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                        <DollarSign className={`w-8 h-8 ${isDark ? 'text-dark-400' : 'text-gray-400'}`} />
                     </div>
-                    <h3 className="text-xl font-semibold text-white">No Incentive Rules</h3>
-                    <p className="text-dark-400 mt-2">Create your first incentive rule to start rewarding efficiency.</p>
+                    <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>No Incentive Rules</h3>
+                    <p className={`mt-2 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>Create your first incentive rule to start rewarding efficiency.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -262,25 +261,25 @@ const IncentiveRulesManager = () => {
                             <div className="flex items-start justify-between mb-4">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-semibold text-white">{rule.name}</h3>
+                                        <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{rule.name}</h3>
                                         {rule.isActive && (
                                             <span className="badge-success text-xs">Active</span>
                                         )}
                                     </div>
                                     {rule.description && (
-                                        <p className="text-dark-400 text-sm mt-1">{rule.description}</p>
+                                        <p className={`text-sm mt-1 ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>{rule.description}</p>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <button
                                         onClick={() => handleEdit(rule)}
-                                        className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
+                                        className={`p-2 ${isDark ? 'text-dark-400 hover:text-white hover:bg-dark-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} rounded-lg transition-colors`}
                                     >
                                         <Edit2 className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(rule._id)}
-                                        className="p-2 text-dark-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        className={`p-2 text-dark-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors`}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -288,18 +287,18 @@ const IncentiveRulesManager = () => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-dark-800 rounded-xl p-4 text-center">
+                                <div className={`${isDark ? 'bg-dark-700' : 'bg-gray-100'} rounded-xl p-4 text-center`}>
                                     <p className="text-2xl font-bold text-primary-400">{rule.timeSavedThreshold}</p>
-                                    <p className="text-xs text-dark-400">mins / unit</p>
+                                    <p className={`text-xs ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>mins / unit</p>
                                 </div>
-                                <div className="bg-dark-800 rounded-xl p-4 text-center">
+                                <div className={`${isDark ? 'bg-dark-700' : 'bg-gray-100'} rounded-xl p-4 text-center`}>
                                     <p className="text-2xl font-bold text-green-400">${rule.bonusPerUnit}</p>
-                                    <p className="text-xs text-dark-400">per unit</p>
+                                    <p className={`text-xs ${isDark ? 'text-dark-400' : 'text-gray-500'}`}>per unit</p>
                                 </div>
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-dark-700 flex items-center justify-between">
-                                <span className="text-xs text-dark-500">
+                            <div className={`mt-4 pt-4 border-t ${isDark ? 'border-dark-700' : 'border-gray-200'} flex items-center justify-between`}>
+                                <span className={`text-xs ${isDark ? 'text-dark-500' : 'text-gray-400'}`}>
                                     Created by {rule.createdBy?.name || 'System'}
                                 </span>
                                 <button

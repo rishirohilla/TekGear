@@ -26,6 +26,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/jobs', require('./routes/jobs'));
 app.use('/api/incentive-rules', require('./routes/incentiveRules'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/shop', require('./routes/shop'));
 
 // Health check route
 app.get('/api/health', (req, res) => {

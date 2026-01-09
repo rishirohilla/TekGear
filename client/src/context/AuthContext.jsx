@@ -45,8 +45,19 @@ export const AuthProvider = ({ children }) => {
         try {
             setError(null);
             const response = await authAPI.signup(userData);
-            const { user, token } = response.data.data;
+            const { user, token, requiresApproval, shop } = response.data.data;
 
+            // If tech needs approval, don't log them in yet
+            if (requiresApproval) {
+                return {
+                    success: true,
+                    requiresApproval: true,
+                    shopName: shop?.name,
+                    user
+                };
+            }
+
+            // Manager or approved user - log them in
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
@@ -65,9 +76,10 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
-    const updateUser = (userData) => {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+    const updateUser = (updates) => {
+        const updatedUser = { ...user, ...updates };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
     };
 
     const value = {
